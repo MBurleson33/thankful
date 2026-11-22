@@ -108,6 +108,37 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
 .list .nm{font-weight:800;flex:none;background:var(--gold);border:2px solid var(--ink);border-radius:999px;padding:2px 10px;font-size:15px}
 .list .rm{flex:none;background:none;border:0;color:var(--cran);font-weight:700;min-height:44px;cursor:pointer;text-decoration:underline}
 
+/* ---------- online */
+.inp{width:100%}
+.codeRow{display:flex;gap:10px}
+.codeInp{font-size:30px!important;letter-spacing:.28em;text-align:center;text-transform:uppercase;padding:6px 12px!important}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:700;font-size:14px;margin:18px 0}
+.or::before,.or::after{content:"";flex:1;height:2px;background:rgba(58,29,18,.18)}
+.offLink{margin-top:16px;color:var(--paper)!important;border-color:rgba(255,253,246,.5)!important}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed rgba(58,29,18,.15)}
+.plist li:last-child{border-bottom:0}
+.plist .st{width:34px;height:34px;flex:none;border-radius:11px;border:3px solid var(--ink);display:grid;place-items:center;font-weight:800;background:var(--mist)}
+.plist .st.ok{background:var(--gold)}
+.plist .nm{font-weight:800;font-size:18px;flex:1}
+.plist .badge{background:var(--gold);border:2px solid var(--ink);border-radius:999px;padding:1px 9px;font-size:13px;font-weight:800}
+.plist .me{color:var(--muted);font-weight:700;font-size:14px}
+.plist .pts{font-weight:800;font-size:20px}
+.plist .rm{background:none;border:0;color:var(--cran);font-weight:700;text-decoration:underline;cursor:pointer;min-height:40px}
+.wait{text-align:center;color:var(--paper);font-weight:700;margin:16px 0}
+.dotty::after{content:"";animation:dots 1.4s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.mine{background:var(--mist);border-radius:14px;padding:10px 14px;font-family:Caveat,cursive;font-size:26px;line-height:1.15;margin:8px 0 14px;overflow-wrap:anywhere}
+.okline{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+.okline i{font-style:normal;width:34px;height:34px;border-radius:50%;background:var(--gold);border:3px solid var(--ink);display:grid;place-items:center}
+.votes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 6px}
+.votes button{border:3px solid var(--ink);border-radius:16px;background:var(--paper);padding:12px 8px;font-weight:800;font-size:17px;box-shadow:0 4px 0 var(--ink);cursor:pointer;min-height:52px;overflow-wrap:anywhere}
+.votes button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.votes button.sel{background:var(--gold)}
+.vcount{text-align:center;color:var(--paper);font-weight:700;margin:8px 0 14px}
+.right{text-align:center;color:var(--paper);font-weight:700;margin:-4px 0 16px}
+.net{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--paper);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:none}
+.net.on{display:block}
 .scrim{position:fixed;inset:0;z-index:10;display:none;align-items:flex-end;justify-content:center;background:rgba(58,29,18,.6);padding:16px 16px calc(env(safe-area-inset-bottom) + 16px)}
 .scrim.open{display:flex}
 .dialog{width:100%;max-width:440px;animation:rise .2s ease-out}
@@ -124,8 +155,90 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
     <svg viewBox="0 0 84 84" aria-hidden="true"><g stroke="#3a1d12" stroke-width="3" stroke-linejoin="round"><rect x="22" y="12" width="20" height="28" rx="3" fill="#fffdf6" transform="rotate(-14 32 26)"/><rect x="40" y="8" width="20" height="30" rx="3" fill="#ffd447" transform="rotate(12 50 23)"/><path d="M10 40h64l-7 30a6 6 0 0 1-6 5H23a6 6 0 0 1-6-5z" fill="#a8622c"/><path d="M15 52h54M17 62h50" fill="none" stroke-width="2.5"/><rect x="6" y="36" width="72" height="9" rx="4.5" fill="#c2334a"/></g></svg>
   </div>
 
+  <!-- ONLINE START -->
+  <section id="vStart" class="hidden">
+    <p class="tagline">Everyone writes one thing they're thankful for on their own phone. Then guess who wrote each one.</p>
+    <div class="sheet">
+      <div class="field"><label class="lbl" for="oName">Your name</label><input class="inp" id="oName" maxlength="20" autocomplete="off" placeholder="First name"></div>
+      <button class="btn btn-go" id="hostBtn" type="button">Host a new game</button>
+      <div class="or">or join a game</div>
+      <div class="codeRow">
+        <input class="inp codeInp" id="oCode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE">
+        <button class="btn btn-chip" id="joinBtn" type="button" style="padding:0 20px;font-size:17px">Join</button>
+      </div>
+      <div class="err" id="oErr" style="margin:12px 0 0"></div>
+    </div>
+    <div class="rules">
+      <h2>How to play</h2>
+      <ul>
+        <li>One person taps Host and reads out the code. Everyone else joins with it.</li>
+        <li>Each person secretly writes one thing they're thankful for.</li>
+        <li>The host reveals the slips one at a time. Everyone votes on who wrote it, then the host shows the answer.</li>
+        <li>You get a point for every right guess.</li>
+      </ul>
+    </div>
+    <button class="btn btn-quiet offLink" id="toPass" type="button">Only one phone? Pass it around instead</button>
+  </section>
+
+  <!-- ONLINE ROOM: writing -->
+  <section id="vRoom" class="hidden">
+    <div class="bar"><div><div class="count" id="rCode">ABCD</div><div class="meta">Room code</div></div><button class="btn btn-chip" id="rLeave" type="button">Leave</button></div>
+    <div class="sheet" style="margin-bottom:16px" id="writeBox">
+      <div id="writeForm">
+        <div class="field"><label class="lbl" for="oTx">I'm thankful for…</label><textarea id="oTx" maxlength="200" placeholder="something only you would say"></textarea></div>
+        <div class="err" id="wErr"></div>
+        <button class="btn btn-go" id="oSend" type="button">Add my slip</button>
+        <p class="hint">Be specific and keep it secret. Don't put your name in it.</p>
+      </div>
+      <div id="writeDone" class="hidden">
+        <div class="okline"><i>✓</i>Your slip is in</div>
+        <div class="mine" id="myText"></div>
+        <button class="btn btn-quiet" id="oEdit" type="button">Change it</button>
+      </div>
+    </div>
+    <div class="sheet" style="margin-bottom:16px">
+      <p style="margin:0 0 8px;font-weight:700" id="rCount">Players</p>
+      <ul class="plist" id="rList"></ul>
+    </div>
+    <div id="rHost" class="hidden">
+      <button class="btn btn-hot" id="rStart" type="button">Start the reveal</button>
+      <p class="hint" id="rHint" style="color:var(--paper);text-align:center"></p>
+    </div>
+    <p class="wait hidden" id="rWait"><span class="dotty">Waiting for the host to start the reveal</span></p>
+  </section>
+
+  <!-- ONLINE REVEAL -->
+  <section id="vOReveal" class="hidden">
+    <div class="bar"><div><div class="count" id="oProg">Slip 1</div><div class="meta" id="oProgOf">of 5</div></div><button class="btn btn-chip" id="oLeave2" type="button">Leave</button></div>
+    <div class="dots" id="oDots"></div>
+    <div class="slip" id="oSlip"><div class="tag">Someone here is thankful for…</div><div class="hand" id="oSlipText"></div></div>
+    <div id="oVoteBox">
+      <p class="guess" id="oVoteLbl">Who wrote it? Tap your guess.</p>
+      <div class="votes" id="oVotes"></div>
+    </div>
+    <p class="vcount" id="oVCount"></p>
+    <div class="who hidden" id="oWho"><span>Written by</span><b id="oWhoName"></b></div>
+    <p class="right hidden" id="oRight"></p>
+    <div id="oHostCtl" class="hidden stack">
+      <button class="btn btn-hot" id="oShow" type="button">Reveal who wrote it</button>
+      <button class="btn btn-go hidden" id="oNext" type="button">Next slip</button>
+    </div>
+    <p class="wait hidden" id="oWaitR"></p>
+  </section>
+
+  <!-- ONLINE DONE -->
+  <section id="vODone" class="hidden">
+    <p class="tagline" style="margin-top:0">That's every slip! Here's the scoreboard.</p>
+    <div class="sheet" style="margin-bottom:18px"><ul class="plist" id="dScores"></ul></div>
+    <p class="tagline" style="margin:0 0 10px">What this table is thankful for</p>
+    <div class="sheet" style="margin-bottom:20px"><ul class="list" id="dAll"></ul></div>
+    <div id="dHost" class="hidden stack"><button class="btn btn-go" id="dAgain" type="button">Play another round</button></div>
+    <p class="wait hidden" id="dWait"><span class="dotty">Waiting for the host</span></p>
+    <button class="btn btn-quiet offLink" id="dLeave" type="button">Leave game</button>
+  </section>
+
   <!-- COLLECT -->
-  <section id="vCollect">
+  <section id="vCollect" class="hidden">
     <p class="tagline">Pass this phone around the table. Everyone secretly adds one thing they're thankful for.</p>
     <div class="steps"><div class="on"><b>1</b>Add slips</div><div><b>2</b>Reveal</div></div>
     <form class="sheet" id="f" autocomplete="off">
@@ -146,6 +259,7 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
       <button class="btn btn-quiet" id="manage" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Fix or remove a slip</button>
     </div>
 
+    <button class="btn btn-quiet offLink" id="toOnline" type="button">Everyone has a phone? Play online</button>
     <div class="rules">
       <h2>How to play</h2>
       <ul>
@@ -203,6 +317,7 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
   </section>
 </div>
 
+<div class="net" id="net">Reconnecting…</div>
 <div class="scrim" id="scrim"><div class="sheet dialog" role="dialog" aria-modal="true" aria-labelledby="dT"><h2 id="dT"></h2><p id="dP"></p><div class="stack" id="dB"></div></div></div>
 
 <script>
@@ -213,8 +328,8 @@ let S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};
 try{const v=JSON.parse(localStorage.getItem(KEY)||"null");if(v&&Array.isArray(v.slips))S=Object.assign(S,v);}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const VIEWS=["vCollect","vPass","vReveal","vDone","vManage"];
-function show(id){VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));document.body.classList.toggle("compact",id!=="vCollect");window.scrollTo(0,0);}
+const VIEWS=["vStart","vRoom","vOReveal","vODone","vCollect","vPass","vReveal","vDone","vManage"];
+function show(id){VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));document.body.classList.toggle("compact",id!=="vCollect"&&id!=="vStart");window.scrollTo(0,0);}
 
 function dialog(title,text,buttons){
   $("dT").textContent=title;$("dP").textContent=text;
@@ -303,7 +418,146 @@ $("mBack").onclick=toCollect;
 const wipe=()=>dialog("Start a new game?","This empties the basket. Every slip will be deleted.",[{label:"Yes, clear everything",cls:"btn-hot",go:()=>{S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};save();toCollect();}},{label:"Cancel",cls:"btn-quiet"}]);
 $("clear").onclick=wipe;$("fresh").onclick=wipe;
 
-if(S.order.length&&S.pos<S.order.length){paintSlip();show("vReveal");}else toCollect();
+// ---------- online play (Vercel API + Upstash)
+const OKEY="thankful-online-v1";
+let O={pid:"",name:"",code:""};
+try{ Object.assign(O, JSON.parse(localStorage.getItem(OKEY)||"{}")); }catch(e){}
+if(!O.pid) O.pid=(Math.random().toString(36).slice(2)+Date.now().toString(36)).slice(0,20);
+const oSave=()=>{ try{ localStorage.setItem(OKEY,JSON.stringify({pid:O.pid,name:O.name,code:O.code})); }catch(e){} };
+oSave();
+let poller=null, busy=false, fails=0, L={phase:"",pos:-1,shown:null,editing:false,round:0}, V=null;
+$("oName").value=O.name||"";
+
+async function call(method,body){
+  const r = await fetch(method==="GET" ? `/api/room?code=${encodeURIComponent(O.code)}&pid=${encodeURIComponent(O.pid)}` : "/api/room", method==="GET" ? {cache:"no-store"} : {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const j = await r.json().catch(()=>({error:"The game server didn't answer."}));
+  if(!r.ok){ const e=new Error(j.error||"Something went wrong."); e.status=r.status; throw e; }
+  return j;
+}
+async function api(body,errEl){
+  try{ const j=await call("POST",Object.assign({pid:O.pid,code:O.code},body)); applyO(j); return true; }
+  catch(e){ if(errEl) errEl.textContent=e.message; else dialog("That didn't go through",e.message,[{label:"OK"}]); return false; }
+}
+function needName(){ const n=$("oName").value.trim(); if(!n){ $("oErr").textContent="Add your name first."; $("oName").focus(); return null; } O.name=n; oSave(); return n; }
+$("oCode").addEventListener("input",e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,""); });
+$("hostBtn").onclick=async()=>{
+  const name=needName(); if(!name||busy) return; busy=true; $("oErr").textContent=""; $("hostBtn").textContent="Making a room…";
+  try{ const j=await call("POST",{action:"create",pid:O.pid,name}); O.code=j.room.code; oSave(); goOnline(j); }catch(e){ $("oErr").textContent=e.message; }
+  busy=false; $("hostBtn").textContent="Host a new game";
+};
+$("joinBtn").onclick=async()=>{
+  const name=needName(); if(!name||busy) return;
+  const code=$("oCode").value.trim();
+  if(code.length!==4){ $("oErr").textContent="Type the 4-letter code the host read out."; $("oCode").focus(); return; }
+  busy=true; $("oErr").textContent="";
+  try{ O.code=code; const j=await call("POST",{action:"join",pid:O.pid,code,name}); oSave(); goOnline(j); }catch(e){ $("oErr").textContent=e.message; O.code=""; oSave(); }
+  busy=false;
+};
+$("toPass").onclick=()=>{ toCollect(); };
+$("toOnline").onclick=()=>show("vStart");
+
+function goOnline(j){ L={phase:"",pos:-1,shown:null,editing:false,round:0}; applyO(j); clearInterval(poller); poller=setInterval(poll,1500); }
+async function poll(){
+  if(!O.code) return;
+  try{ const j=await call("GET"); fails=0; $("net").classList.remove("on"); applyO(j); }
+  catch(e){ if(e.status===404){ stopOnline(); dialog("This game has ended","The room expired or was closed. Host or join a new one.",[{label:"OK"}]); return; }
+    if(++fails>=2) $("net").classList.add("on"); }
+}
+function stopOnline(){ clearInterval(poller); poller=null; O.code=""; oSave(); $("net").classList.remove("on"); $("scrim").classList.remove("open"); show("vStart"); }
+function leaveOnline(){
+  const host=V&&V.room.hostId===O.pid;
+  dialog("Leave this game?",host?"You're the host. If you leave, nobody can move the game forward.":"You can rejoin with the same code.",[
+    {label:"Leave game",cls:"btn-hot",go:async()=>{ try{ await call("POST",{action:"leave",pid:O.pid,code:O.code}); }catch(e){} stopOnline(); }},{label:"Stay",cls:"btn-quiet"}]);
+}
+$("rLeave").onclick=leaveOnline; $("oLeave2").onclick=leaveOnline; $("dLeave").onclick=leaveOnline;
+
+$("oSend").onclick=async()=>{
+  const t=$("oTx").value.trim(); $("wErr").textContent="";
+  if(t.length<2){ $("wErr").textContent="Write what you're thankful for."; $("oTx").focus(); return; }
+  $("oSend").disabled=true; L.editing=false;
+  await api({action:"slip",text:t},$("wErr"));
+  $("oSend").disabled=false;
+};
+$("oEdit").onclick=()=>{ L.editing=true; $("oTx").value=V?V.mySlip:""; paintRoom(); $("oTx").focus(); };
+$("rStart").onclick=()=>{
+  const n=V.players.filter(p=>p.wrote).length, m=V.players.length-n;
+  dialog("Start the reveal?", m ? `${m} ${m===1?"person hasn't":"people haven't"} written a slip yet. They can still vote, but their slip won't be in this round.` : `All ${n} slips are in.`,
+    [{label:"Start the reveal",cls:"btn-hot",go:()=>api({action:"start"})},{label:"Wait",cls:"btn-quiet"}]);
+};
+$("oShow").onclick=()=>api({action:"show"});
+$("oNext").onclick=()=>api({action:"next"});
+$("dAgain").onclick=()=>dialog("Play another round?","Everyone writes a new slip. Scores start over.",[{label:"New round",go:()=>api({action:"reset"})},{label:"Cancel",cls:"btn-quiet"}]);
+
+const nameOf=id=>{ const p=V.players.find(x=>x.id===id); return p?p.name:"Someone"; };
+
+function paintRoom(){
+  const r=V.room, host=r.hostId===O.pid;
+  $("rCode").textContent=r.code;
+  const wrote=!!V.mySlip && !L.editing;
+  $("writeForm").classList.toggle("hidden",wrote); $("writeDone").classList.toggle("hidden",!wrote);
+  if(wrote) $("myText").textContent=V.mySlip;
+  $("oSend").textContent = V.mySlip ? "Save my slip" : "Add my slip";
+  const n=V.players.filter(p=>p.wrote).length;
+  $("rCount").textContent=`${n} of ${V.players.length} slips in`;
+  $("rList").innerHTML=V.players.map(p=>`<li><span class="st ${p.wrote?"ok":""}">${p.wrote?"✓":"✎"}</span><span class="nm">${esc(p.name)}</span>${p.id===r.hostId?'<span class="badge">Host</span>':""}${p.id===O.pid?'<span class="me">You</span>':""}${host&&p.id!==r.hostId?`<button class="rm" type="button" data-k="${p.id}">Remove</button>`:""}</li>`).join("");
+  $("rList").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const who=nameOf(b.dataset.k); dialog(`Remove ${who}?`,"Use this if someone joined twice or left.",[{label:"Remove",cls:"btn-hot",go:()=>api({action:"kick",who:b.dataset.k})},{label:"Cancel",cls:"btn-quiet"}]); });
+  $("rHost").classList.toggle("hidden",!host); $("rWait").classList.toggle("hidden",host);
+  if(host){ $("rStart").disabled=n<2; $("rHint").textContent = n<2 ? "Need at least two slips to start." : n<V.players.length ? "Waiting on a few people. Start whenever you're ready." : "Everyone's in!"; }
+}
+
+function paintReveal(){
+  const r=V.room, host=r.hostId===O.pid, sl=V.slip;
+  $("oProg").textContent=`Slip ${r.pos+1}`; $("oProgOf").textContent=`of ${r.total}`;
+  $("oDots").innerHTML=Array.from({length:r.total},(_,i)=>`<i class="${i<r.pos?"done":i===r.pos?"cur":""}"></i>`).join("");
+  if(L.pos!==r.pos||L.phase!=="reveal"){ $("oSlipText").textContent=sl.text; const el=$("oSlip"); el.classList.remove("pull"); void el.offsetWidth; el.classList.add("pull"); }
+  const voters=V.players.filter(p=>p.id!==(r.shown?sl.author:"")).length;
+  if(!r.shown){
+    $("oVoteBox").classList.remove("hidden"); $("oWho").classList.add("hidden"); $("oRight").classList.add("hidden");
+    if(sl.mine){ $("oVoteLbl").textContent="This one's yours! Keep a straight face."; $("oVotes").innerHTML=""; }
+    else{
+      $("oVoteLbl").textContent = V.myVote ? "Got it. You can change your guess until the host reveals." : "Who wrote it? Tap your guess.";
+      $("oVotes").innerHTML=V.players.filter(p=>p.id!==O.pid).map(p=>`<button type="button" data-v="${p.id}" class="${V.myVote===p.id?"sel":""}">${esc(p.name)}</button>`).join("");
+      $("oVotes").querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{ $("oVotes").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"vote",guess:b.dataset.v}); });
+    }
+    const can=V.players.length-1;
+    $("oVCount").textContent=`${V.voted.length} of ${can} voted`;
+  } else {
+    $("oVoteBox").classList.add("hidden"); $("oVCount").textContent="";
+    $("oWhoName").textContent=sl.authorName; $("oWho").classList.remove("hidden");
+    const mineRight = sl.right.includes(O.name);
+    $("oRight").textContent = sl.right.length ? `Guessed right: ${sl.right.join(", ")}${mineRight?" (nice!)":""}` : "Nobody guessed it!";
+    $("oRight").classList.remove("hidden");
+  }
+  $("oHostCtl").classList.toggle("hidden",!host); $("oWaitR").classList.toggle("hidden",host);
+  if(host){ $("oShow").classList.toggle("hidden",r.shown); $("oNext").classList.toggle("hidden",!r.shown); $("oNext").textContent = r.pos+1<r.total ? "Next slip" : "See the scoreboard"; }
+  else $("oWaitR").innerHTML = `<span class="dotty">${r.shown?"Waiting for the next slip":"Waiting for the host to reveal"}</span>`;
+}
+
+function paintDone(){
+  const r=V.room, host=r.hostId===O.pid, sc=r.scores||{};
+  const rows=V.players.map(p=>({p,n:sc[p.id]||0})).sort((a,b)=>b.n-a.n);
+  const top=rows.length?rows[0].n:0;
+  $("dScores").innerHTML=rows.map(x=>`<li><span class="st ${x.n===top&&top>0?"ok":""}">${x.n===top&&top>0?"★":""}</span><span class="nm">${esc(x.p.name)}</span>${x.p.id===O.pid?'<span class="me">You</span>':""}<span class="pts">${x.n}</span></li>`).join("");
+  $("dAll").innerHTML=(V.all||[]).map(s=>`<li><span class="t">${esc(s.text)}</span><span class="nm">${esc(s.name)}</span></li>`).join("");
+  $("dHost").classList.toggle("hidden",!host); $("dWait").classList.toggle("hidden",host);
+}
+
+function applyO(j){
+  V=j; const r=j.room;
+  if(!j.players.some(p=>p.id===O.pid)){ stopOnline(); dialog("You're not in this game","The host may have removed you. You can join again with the code.",[{label:"OK"}]); return; }
+  const changed = L.phase!==r.phase || L.round!==r.round;
+  if(L.round && L.round!==r.round){ L.editing=false; $("oTx").value=""; }
+  if(r.phase==="collect"){ if(changed) show("vRoom"); paintRoom(); }
+  else if(r.phase==="reveal"){ if(changed) show("vOReveal"); paintReveal(); }
+  else { if(changed) show("vODone"); paintDone(); }
+  L.phase=r.phase; L.pos=r.pos; L.shown=r.shown; L.round=r.round;
+}
+
+// Start: rejoin an online game, resume a pass-the-phone game, or show the online start
+if(O.code){ show("vStart"); call("GET").then(goOnline).catch(()=>{ O.code=""; oSave(); }); }
+else if(S.order.length&&S.pos<S.order.length){paintSlip();show("vReveal");}
+else if(S.slips.length){ toCollect(); }
+else show("vStart");
 }
 </script>
 </body>
