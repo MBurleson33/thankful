@@ -2,152 +2,242 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e8742a">
 <title>Who's Thankful For That?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Caveat:wght@700&display=swap" rel="stylesheet">
 <style>
-/* VOICE: warm, playful, around-the-table party game
-   IDEA: folded paper slips pulled one at a time from a basket
-   PICTURE: the big paper slip itself, handwritten, centre stage
-   COLOUR and TYPE: deep cranberry ground, pumpkin support, gold accent; Caveat for slips, Figtree for UI
-   LAYOUT: one calm column, one task per screen, big thumb buttons */
-:root{color-scheme:light dark;--bg:light-dark(#7a1f2b,#3a0e15);--bg2:light-dark(#5e1621,#250a0e);--ink:#fff6ea;--paper:#fff3dc;--paperInk:#3a1d12;--pump:#e8742a;--gold:#f6c04a;--muted:light-dark(#f3d6c6,#d9b9a8)}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
-*{box-sizing:border-box;min-width:0}
-body{margin:0;min-height:100dvh;background:radial-gradient(120% 70% at 50% 0%,var(--bg) 0%,var(--bg2) 100%) fixed;color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
-main{max-width:560px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 40px}
-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-header svg{width:44px;height:44px;flex:none}
-h1{font-size:clamp(26px,6vw,34px);line-height:1.05;margin:0;font-weight:800;text-wrap:balance}
-h2{font-size:24px;line-height:1.15;margin:0 0 8px;text-wrap:balance}
-p{margin:0 0 14px}.muted{color:var(--muted)}
-.view{display:none}.view.on{display:block;animation:rise .35s ease}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.view.on,.slip{animation:none!important}}
-.slip{position:relative;background:var(--paper);color:var(--paperInk);border-radius:6px;padding:28px 22px 24px;box-shadow:0 2px 0 rgba(0,0,0,.08),0 18px 40px rgba(0,0,0,.35);transform:rotate(-1.2deg);margin:8px 4px 22px}
-.slip::before{content:"";position:absolute;inset:0;border-radius:6px;background:repeating-linear-gradient(transparent 0 33px,rgba(58,29,18,.09) 33px 34px);pointer-events:none}
-.slip .hand{font-family:Caveat,cursive;font-size:clamp(30px,8vw,42px);line-height:1.15;font-weight:700;overflow-wrap:anywhere;position:relative}
-.slip .tag{font-size:13px;font-weight:600;color:#9a4a22;margin-bottom:6px;position:relative}
-.slip.pull{animation:pull .5s ease}
-@keyframes pull{from{opacity:0;transform:translateY(40px) rotate(4deg)}to{opacity:1;transform:rotate(-1.2deg)}}
-label{display:block;font-weight:600;margin:0 0 6px}
-input,textarea{width:100%;font:inherit;font-size:17px;padding:13px 14px;border-radius:12px;border:2px solid transparent;background:var(--paper);color:var(--paperInk);margin-bottom:14px}
-textarea{font-family:Caveat,cursive;font-size:26px;line-height:1.2;min-height:120px;resize:vertical}
-input:focus,textarea:focus{outline:none;border-color:var(--gold)}
-.btn{display:block;width:100%;min-height:54px;border:0;border-radius:14px;font:800 18px Figtree,sans-serif;cursor:pointer;margin-bottom:10px;background:var(--gold);color:#3a1d12}
-.btn.alt{background:rgba(255,246,234,.12);color:var(--ink)}
-.btn.pump{background:var(--pump);color:#fff}
-.btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.btn:disabled{opacity:.45;cursor:default}
-.row{display:flex;gap:10px}.row .btn{flex:1}
-.count{display:flex;align-items:center;gap:14px;background:rgba(0,0,0,.18);border-radius:16px;padding:14px 16px;margin-bottom:16px}
-.count b{font-size:40px;line-height:1;color:var(--gold)}
-.tips{font-size:15px;color:var(--muted);background:rgba(0,0,0,.14);border-radius:12px;padding:12px 14px;margin-bottom:16px}
-.tips ul{margin:6px 0 0;padding-left:18px}
-.who{text-align:center;min-height:64px;margin:-6px 0 14px}
-.who .name{font-size:32px;font-weight:800;color:var(--gold)}
-.progress{font-size:14px;color:var(--muted);text-align:center;margin-bottom:6px}
-.err{color:var(--gold);font-weight:600;min-height:22px;margin:-8px 0 8px;font-size:15px}
-.big{font-size:56px;text-align:center;line-height:1;margin:10px 0}
-.list{list-style:none;padding:0;margin:0 0 16px}
-.list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(0,0,0,.16);border-radius:12px;padding:10px 12px;margin-bottom:8px}
-.list button{background:none;border:0;color:var(--muted);font:600 15px Figtree;min-height:44px;cursor:pointer;text-decoration:underline}
-.scrim{position:fixed;inset:0;background:rgba(20,5,8,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
-.scrim.on{display:flex}
-.dlg{background:var(--paper);color:var(--paperInk);border-radius:18px;padding:22px;max-width:400px;width:100%}
-.dlg h3{margin:0 0 6px;font-size:21px}.dlg p{color:#6b4636}
-.dlg .btn.alt{background:#ead6b8;color:#3a1d12}
+:root{
+  --pump:#e8742a;      /* page */
+  --pump-deep:#c95d1b;
+  --ink:#3a1d12;       /* outlines + text */
+  --paper:#fffdf6;     /* card surfaces */
+  --mist:#fbeedd;      /* inputs */
+  --gold:#ffd447;      /* primary action */
+  --cran:#c2334a;      /* reveal */
+  --muted:#7a5240;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{min-height:100vh;background:var(--pump);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:16px;line-height:1.45;
+  padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 28px)}
+.wrap{max-width:440px;margin:0 auto}
+h1,h2{margin:0;font-weight:800;line-height:1;letter-spacing:-.02em}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.hidden{display:none!important}
+
+.sheet{background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:0 6px 0 var(--ink);padding:18px}
+.btn{display:block;width:100%;border:3px solid var(--ink);border-radius:999px;padding:15px 20px;font-weight:800;font-size:18px;cursor:pointer;
+  box-shadow:0 5px 0 var(--ink);transition:transform .07s,box-shadow .07s;background:var(--paper)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}.btn:disabled:active{transform:none;box-shadow:0 5px 0 var(--ink)}
+.btn-go{background:var(--gold)}
+.btn-hot{background:var(--cran);color:#fff}
+.btn-quiet{background:transparent;box-shadow:none;border-color:rgba(58,29,18,.4);font-weight:700}
+.btn-quiet:active{transform:none;background:rgba(58,29,18,.08)}
+.btn-chip{width:auto;display:inline-block;padding:8px 16px;font-size:15px;box-shadow:0 3px 0 var(--ink)}
+.btn-chip:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.stack{display:grid;gap:14px}
+
+.hero{display:flex;align-items:flex-end;gap:12px;margin:6px 0 4px;color:var(--paper)}
+.hero h1{font-size:clamp(34px,10.5vw,46px);text-shadow:0 4px 0 var(--ink);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
+.hero svg{width:min(84px,20vw);flex:none}
+.tagline{color:var(--paper);font-size:17px;margin:12px 0 18px;max-width:32ch;font-weight:500}
+
+/* step tracker */
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.steps div{display:flex;align-items:center;gap:8px;border-radius:999px;padding:7px 12px;font-weight:700;font-size:15px;background:var(--pump-deep);color:rgba(255,253,246,.75)}
+.steps b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:rgba(255,253,246,.2);flex:none}
+.steps .on{background:var(--paper);color:var(--ink);border:3px solid var(--ink);padding:4px 9px}
+.steps .on b{background:var(--gold);border:2px solid var(--ink)}
+
+.field{margin-bottom:16px}
+.lbl{display:block;font-weight:700;font-size:15px;margin-bottom:7px}
+input,textarea{width:100%;background:var(--mist);border:3px solid var(--ink);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;outline:none}
+input:focus,textarea:focus{background:#fff}
+textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:700;min-height:120px;resize:vertical}
+::placeholder{color:rgba(58,29,18,.35)}
+.err{color:var(--cran);font-weight:700;font-size:15px;min-height:0;margin:-6px 0 12px}
+.err:empty{display:none}
+.hint{font-size:14px;color:var(--muted);margin:10px 0 0}
+
+.inbox{display:flex;align-items:center;gap:14px;margin:18px 0}
+.inbox .n{width:56px;height:56px;flex:none;border-radius:18px;background:var(--gold);border:3px solid var(--ink);display:grid;place-items:center;font-size:30px;font-weight:800}
+.inbox b{display:block;font-size:18px;line-height:1.15}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips span{background:var(--mist);border-radius:999px;padding:3px 10px;font-size:14px;font-weight:700}
+.chips .none{background:none;padding:0;color:var(--muted);font-weight:500}
+
+.rules{color:var(--paper);margin-top:26px}
+.rules h2{font-size:22px;margin-bottom:10px}
+.rules ul{margin:0;padding-left:22px}.rules li{margin-bottom:8px}
+
+/* handoff cover */
+.cover{text-align:center;padding:34px 20px}
+.cover .big{font-size:64px;line-height:1}
+.cover h2{font-size:30px;margin:12px 0 8px}
+.cover p{color:var(--muted);margin:0 0 22px}
+
+/* reveal */
+.bar{display:flex;align-items:center;justify-content:space-between;color:var(--paper);margin-bottom:14px}
+.bar .count{font-size:30px;font-weight:800;line-height:1;text-shadow:0 3px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+.bar .btn{color:var(--ink)}
+.compact .hero h1{font-size:26px;text-shadow:0 2px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink)}.compact .hero svg{width:44px}.compact .hero{margin-bottom:14px}
+.bar .meta{font-size:14px;font-weight:700;opacity:.9;margin-top:4px}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.dots i{width:12px;height:12px;border-radius:50%;background:rgba(255,253,246,.35)}
+.dots i.done{background:var(--ink)}.dots i.cur{background:var(--paper);outline:2px solid var(--ink)}
+.slip{position:relative;background:var(--paper);border:3px solid var(--ink);border-radius:8px;box-shadow:0 7px 0 var(--ink);padding:24px 20px 26px;transform:rotate(-1.5deg);margin:6px 4px 22px;min-height:200px}
+.slip::before{content:"";position:absolute;inset:0;border-radius:6px;background:repeating-linear-gradient(transparent 0 35px,rgba(58,29,18,.1) 35px 36px);pointer-events:none}
+.slip .tag{font-weight:700;color:var(--muted);font-size:15px;position:relative}
+.slip .hand{font-family:Caveat,cursive;font-size:clamp(34px,9vw,44px);line-height:1.12;font-weight:700;overflow-wrap:anywhere;position:relative;margin-top:6px}
+.slip.pull{animation:pull .45s ease-out}
+@keyframes pull{from{opacity:0;transform:translateY(36px) rotate(4deg)}}
+.who{text-align:center;background:var(--cran);color:#fff;border:3px solid var(--ink);border-radius:20px;padding:14px;margin-bottom:16px;box-shadow:0 5px 0 var(--ink);animation:pop .2s ease-out}
+.who span{font-weight:700;opacity:.9}.who b{display:block;font-size:40px;line-height:1.05}
+.guess{text-align:center;color:var(--paper);font-weight:700;font-size:17px;margin:0 0 14px}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+
+.list{list-style:none;padding:0;margin:0}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:2px dashed rgba(58,29,18,.18)}
+.list li:last-child{border-bottom:0}
+.list .t{font-family:Caveat,cursive;font-size:26px;line-height:1.1}
+.list .nm{font-weight:800;flex:none;background:var(--gold);border:2px solid var(--ink);border-radius:999px;padding:2px 10px;font-size:15px}
+.list .rm{flex:none;background:none;border:0;color:var(--cran);font-weight:700;min-height:44px;cursor:pointer;text-decoration:underline}
+
+.scrim{position:fixed;inset:0;z-index:10;display:none;align-items:flex-end;justify-content:center;background:rgba(58,29,18,.6);padding:16px 16px calc(env(safe-area-inset-bottom) + 16px)}
+.scrim.open{display:flex}
+.dialog{width:100%;max-width:440px;animation:rise .2s ease-out}
+.dialog h2{font-size:28px;margin-bottom:8px}
+.dialog p{margin:0 0 18px;color:var(--muted)}
+@keyframes rise{from{transform:translateY(40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.slip.pull,.who,.dialog{animation:none}}
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="40" rx="17" ry="4" fill="rgba(0,0,0,.25)"/><path d="M7 22h34l-4 16a4 4 0 0 1-4 3H15a4 4 0 0 1-4-3z" fill="#c8813f"/><path d="M9 27h30M10 32h28" stroke="#8f5426" stroke-width="2"/><rect x="15" y="9" width="12" height="15" rx="2" fill="#fff3dc" transform="rotate(-12 21 16)"/><rect x="23" y="7" width="12" height="16" rx="2" fill="#f6c04a" transform="rotate(10 29 15)"/><rect x="6" y="20" width="36" height="5" rx="2.5" fill="#e8742a"/></svg>
+<div class="wrap">
+  <div class="hero">
     <h1>Who's Thankful For That?</h1>
-  </header>
+    <svg viewBox="0 0 84 84" aria-hidden="true"><g stroke="#3a1d12" stroke-width="3" stroke-linejoin="round"><rect x="22" y="12" width="20" height="28" rx="3" fill="#fffdf6" transform="rotate(-14 32 26)"/><rect x="40" y="8" width="20" height="30" rx="3" fill="#ffd447" transform="rotate(12 50 23)"/><path d="M10 40h64l-7 30a6 6 0 0 1-6 5H23a6 6 0 0 1-6-5z" fill="#a8622c"/><path d="M15 52h54M17 62h50" fill="none" stroke-width="2.5"/><rect x="6" y="36" width="72" height="9" rx="4.5" fill="#c2334a"/></g></svg>
+  </div>
 
   <!-- COLLECT -->
-  <section class="view" id="vCollect">
-    <div class="count"><b id="n">0</b><div><strong>slips in the basket</strong><br><span class="muted">Pass the phone around the table</span></div></div>
-    <form id="f" autocomplete="off">
-      <label for="nm">Your name</label>
-      <input id="nm" maxlength="40" placeholder="First name is fine">
-      <label for="tx">One thing you're thankful for</label>
-      <textarea id="tx" maxlength="200" placeholder="Something only you would write…"></textarea>
+  <section id="vCollect">
+    <p class="tagline">Pass this phone around the table. Everyone secretly adds one thing they're thankful for.</p>
+    <div class="steps"><div class="on"><b>1</b>Add slips</div><div><b>2</b>Reveal</div></div>
+    <form class="sheet" id="f" autocomplete="off">
+      <div class="field"><label class="lbl" for="nm">Your name</label><input id="nm" maxlength="40" placeholder="First name"></div>
+      <div class="field"><label class="lbl" for="tx">I'm thankful for…</label><textarea id="tx" maxlength="200" placeholder="something only you would say"></textarea></div>
       <div class="err" id="err"></div>
-      <button class="btn" type="submit">Drop it in the basket</button>
+      <button class="btn btn-go" type="submit" id="submitBtn">Fold it up and add it</button>
+      <p class="hint">Be specific. "The quiet 6am coffee before the kids wake up" is way more fun to guess than "family."</p>
     </form>
-    <div class="tips"><strong>Make it guessable, but not too easy</strong>
-      <ul><li>Be specific: "the 6am quiet before the kids wake up" beats "family"</li><li>A funny one is great: "the person who invented stretchy pants"</li><li>Don't put your name in it</li></ul></div>
-    <button class="btn pump" id="toReveal" type="button">Everyone's in, start the reveal</button>
-    <button class="btn alt" id="manage" type="button">Manage slips</button>
+
+    <div class="sheet inbox">
+      <div class="n" id="n">0</div>
+      <div><b id="inLbl">No slips yet</b><div class="chips" id="chips"></div></div>
+    </div>
+
+    <div class="stack">
+      <button class="btn btn-hot" id="toReveal" type="button">Everyone's in, start the reveal</button>
+      <button class="btn btn-quiet" id="manage" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Fix or remove a slip</button>
+    </div>
+
+    <div class="rules">
+      <h2>How to play</h2>
+      <ul>
+        <li>Each person types their name and what they're thankful for, then passes the phone on.</li>
+        <li>When everyone's in, the slips come out one at a time in random order.</li>
+        <li>Everyone guesses out loud who wrote it, then tap to reveal.</li>
+      </ul>
+    </div>
   </section>
 
   <!-- HANDOFF -->
-  <section class="view" id="vPass">
-    <div class="big" aria-hidden="true">🍂</div>
-    <h2 style="text-align:center">Got it, thanks <span id="passName"></span>!</h2>
-    <p class="muted" style="text-align:center">Your slip is folded up and hidden. Hand the phone to the next person.</p>
-    <button class="btn" id="next" type="button">I'm next</button>
-    <button class="btn alt" id="oops" type="button">Oops, let me fix mine</button>
+  <section id="vPass" class="hidden">
+    <div class="sheet cover">
+      <div class="big" aria-hidden="true">🍂</div>
+      <h2>Thanks, <span id="passName"></span>!</h2>
+      <p>Your slip is folded and hidden. Pass the phone to the next person.</p>
+      <div class="stack">
+        <button class="btn btn-go" id="next" type="button">I'm the next person</button>
+        <button class="btn btn-quiet" id="oops" type="button">Wait, let me fix mine</button>
+        <button class="btn btn-quiet" id="allIn" type="button">That was everyone</button>
+      </div>
+    </div>
   </section>
 
   <!-- REVEAL -->
-  <section class="view" id="vReveal">
-    <div class="progress" id="prog"></div>
+  <section id="vReveal" class="hidden">
+    <div class="steps"><div><b>1</b>Add slips</div><div class="on"><b>2</b>Reveal</div></div>
+    <div class="bar"><div><div class="count" id="prog">Slip 1</div><div class="meta" id="progOf">of 8</div></div><button class="btn btn-chip" id="backAdd" type="button">Add more</button></div>
+    <div class="dots" id="dots"></div>
     <div class="slip" id="slip"><div class="tag">Someone here is thankful for…</div><div class="hand" id="slipText"></div></div>
-    <div class="who" id="who"><p class="muted">Everyone guess out loud, then reveal.</p></div>
-    <button class="btn" id="reveal" type="button">Reveal who wrote it</button>
-    <button class="btn pump" id="pull" type="button" style="display:none">Pull the next slip</button>
-    <button class="btn alt" id="backAdd" type="button">Back to adding slips</button>
+    <p class="guess" id="guess">Who wrote it? Everyone guess out loud!</p>
+    <div class="who hidden" id="who"><span>Written by</span><b id="whoName"></b></div>
+    <button class="btn btn-hot" id="reveal" type="button">Reveal who wrote it</button>
+    <button class="btn btn-go hidden" id="pull" type="button">Next slip</button>
   </section>
 
   <!-- DONE -->
-  <section class="view" id="vDone">
-    <div class="big" aria-hidden="true">🦃</div>
-    <h2 style="text-align:center">That's the whole basket</h2>
-    <p class="muted" style="text-align:center">Here's everything the table is thankful for tonight.</p>
-    <ul class="list" id="all"></ul>
-    <button class="btn" id="again" type="button">Reveal them again</button>
-    <button class="btn alt" id="fresh" type="button">Start a new game</button>
+  <section id="vDone" class="hidden">
+    <p class="tagline">That's the whole basket. Here's what this table is thankful for tonight.</p>
+    <div class="sheet" style="margin-bottom:20px"><ul class="list" id="all"></ul></div>
+    <div class="stack">
+      <button class="btn btn-go" id="again" type="button">Reveal them again</button>
+      <button class="btn btn-quiet" id="fresh" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Start a new game</button>
+    </div>
   </section>
 
   <!-- MANAGE -->
-  <section class="view" id="vManage">
-    <h2>Slips in the basket</h2>
-    <p class="muted">Names only, so nothing gets spoiled. Remove one if someone added it twice.</p>
-    <ul class="list" id="mlist"></ul>
-    <button class="btn" id="mBack" type="button">Done</button>
-    <button class="btn alt" id="clear" type="button">Clear everything</button>
+  <section id="vManage" class="hidden">
+    <p class="tagline">Names only, so nothing gets spoiled. Tap a name to let that person fix their slip.</p>
+    <div class="sheet" style="margin-bottom:20px"><ul class="list" id="mlist"></ul></div>
+    <div class="stack">
+      <button class="btn btn-go" id="mBack" type="button">Done</button>
+      <button class="btn btn-quiet" id="clear" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Clear every slip</button>
+    </div>
   </section>
-</main>
+</div>
 
-<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="dT"><div class="dlg"><h3 id="dT"></h3><p id="dP"></p><div id="dB"></div></div></div>
+<div class="scrim" id="scrim"><div class="sheet dialog" role="dialog" aria-modal="true" aria-labelledby="dT"><h2 id="dT"></h2><p id="dP"></p><div class="stack" id="dB"></div></div></div>
 
 <script>
 {
 const $=id=>document.getElementById(id);
 const KEY="thankful-slips-v1";
-let S={slips:[],order:[],pos:0,lastId:null,editing:null};
+let S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};
 try{const v=JSON.parse(localStorage.getItem(KEY)||"null");if(v&&Array.isArray(v.slips))S=Object.assign(S,v);}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-function show(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===id));window.scrollTo(0,0);}
+const VIEWS=["vCollect","vPass","vReveal","vDone","vManage"];
+function show(id){VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));document.body.classList.toggle("compact",id!=="vCollect");window.scrollTo(0,0);}
 
 function dialog(title,text,buttons){
   $("dT").textContent=title;$("dP").textContent=text;
-  $("dB").innerHTML=buttons.map((b,i)=>`<button class="btn ${b.alt?"alt":""}" data-i="${i}" type="button">${esc(b.label)}</button>`).join("");
-  $("dB").querySelectorAll("button").forEach(el=>el.onclick=()=>{$("scrim").classList.remove("on");const f=buttons[+el.dataset.i].go;if(f)f();});
-  $("scrim").classList.add("on");$("dB").querySelector("button").focus();
+  $("dB").innerHTML=buttons.map((b,i)=>`<button class="btn ${b.cls||"btn-go"}" data-i="${i}" type="button">${esc(b.label)}</button>`).join("");
+  $("dB").querySelectorAll("button").forEach(el=>el.onclick=()=>{$("scrim").classList.remove("open");const f=buttons[+el.dataset.i].go;if(f)f();});
+  $("scrim").classList.add("open");$("dB").querySelector("button").focus();
 }
+$("scrim").onclick=e=>{if(e.target===$("scrim"))$("scrim").classList.remove("open");};
 
-function paintCount(){$("n").textContent=S.slips.length;}
-
+function paintInbox(){
+  const n=S.slips.length;$("n").textContent=n;
+  $("inLbl").textContent=n===0?"No slips yet":n===1?"1 slip in the basket":`${n} slips in the basket`;
+  $("chips").innerHTML=n?S.slips.map(s=>`<span>${esc(s.name)}</span>`).join(""):`<span class="none">Names show up here as people add theirs.</span>`;
+  $("toReveal").disabled=n<2;
+}
 function toCollect(){
   S.editing=null;$("nm").value="";$("tx").value="";$("err").textContent="";
-  paintCount();show("vCollect");save();
+  $("submitBtn").textContent="Fold it up and add it";
+  paintInbox();show("vCollect");save();
+}
+function editSlip(s){
+  S.editing=s.id;$("nm").value=s.name;$("tx").value=s.text;$("err").textContent="";
+  $("submitBtn").textContent="Save my slip";paintInbox();show("vCollect");$("tx").focus();
 }
 
 $("f").addEventListener("submit",e=>{
@@ -155,63 +245,64 @@ $("f").addEventListener("submit",e=>{
   const name=$("nm").value.trim(),text=$("tx").value.trim();
   if(!name){$("err").textContent="Add your name so we can reveal it later.";$("nm").focus();return;}
   if(text.length<2){$("err").textContent="Write what you're thankful for.";$("tx").focus();return;}
-  if(S.editing){const s=S.slips.find(x=>x.id===S.editing);if(s){s.name=name;s.text=text;}S.lastId=S.editing;S.editing=null;}
-  else{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.slips.push({id,name,text});S.lastId=id;}
-  S.order=[];S.pos=0;save();
-  $("passName").textContent=name;show("vPass");
+  const dup=S.slips.find(x=>x.name.toLowerCase()===name.toLowerCase()&&x.id!==S.editing);
+  const commit=()=>{
+    if(S.editing){const s=S.slips.find(x=>x.id===S.editing);if(s){s.name=name;s.text=text;}S.lastId=S.editing;S.editing=null;}
+    else{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.slips.push({id,name,text});S.lastId=id;}
+    S.order=[];S.pos=0;save();$("passName").textContent=name;show("vPass");
+  };
+  if(dup)dialog(`There's already a slip from ${dup.name}`,"Two people with the same name? Add a last initial so the reveal makes sense.",[{label:"Add it anyway",go:commit},{label:"Let me change my name",cls:"btn-quiet",go:()=>$("nm").focus()}]);
+  else commit();
 });
 
 $("next").onclick=toCollect;
-$("oops").onclick=()=>{
-  const s=S.slips.find(x=>x.id===S.lastId);if(!s){toCollect();return;}
-  S.editing=s.id;$("nm").value=s.name;$("tx").value=s.text;$("err").textContent="";paintCount();show("vCollect");$("tx").focus();
-};
+$("oops").onclick=()=>{const s=S.slips.find(x=>x.id===S.lastId);s?editSlip(s):toCollect();};
+$("allIn").onclick=()=>{paintInbox();askReveal();};
 
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-
-function startReveal(){
-  if(S.slips.length<2){dialog("Need a few more slips","Get at least two people to add one before the reveal.",[{label:"Okay"}]);return;}
-  S.order=shuffle(S.slips.map(s=>s.id));S.pos=0;save();paintSlip();show("vReveal");
+function startReveal(){S.order=shuffle(S.slips.map(s=>s.id));S.pos=0;S.shown=false;save();paintSlip();show("vReveal");}
+function askReveal(){
+  if(S.slips.length<2){dialog("Need at least two slips","Get one more person to add theirs, then start the reveal.",[{label:"Okay",go:toCollect}]);return;}
+  dialog("Start the reveal?",`${S.slips.length} slips are in. Once it starts, the slips get shuffled.`,[{label:"Start the reveal",cls:"btn-hot",go:startReveal},{label:"Not yet, someone's missing",cls:"btn-quiet",go:toCollect}]);
 }
-$("toReveal").onclick=()=>dialog("Ready to reveal?",`${S.slips.length} slips are in. Make sure everyone has added theirs.`,[{label:"Start the reveal",go:startReveal},{label:"Not yet",alt:true}]);
+$("toReveal").onclick=askReveal;
 
 function paintSlip(){
   const s=S.slips.find(x=>x.id===S.order[S.pos]);
   if(!s){finish();return;}
-  $("prog").textContent=`Slip ${S.pos+1} of ${S.order.length}`;
+  $("prog").textContent=`Slip ${S.pos+1}`;$("progOf").textContent=`of ${S.order.length}`;
+  $("dots").innerHTML=S.order.map((_,i)=>`<i class="${i<S.pos?"done":i===S.pos?"cur":""}"></i>`).join("");
   $("slipText").textContent=s.text;
   const el=$("slip");el.classList.remove("pull");void el.offsetWidth;el.classList.add("pull");
-  $("who").innerHTML=`<p class="muted">Everyone guess out loud, then reveal.</p>`;
-  $("reveal").style.display="block";$("pull").style.display="none";
+  paintWho(s);
 }
-$("reveal").onclick=()=>{
-  const s=S.slips.find(x=>x.id===S.order[S.pos]);
-  $("who").innerHTML=`<div class="muted">Written by</div><div class="name">${esc(s.name)}</div>`;
-  $("reveal").style.display="none";$("pull").style.display="block";
-  $("pull").textContent=S.pos+1<S.order.length?"Pull the next slip":"See all the slips";
-};
-$("pull").onclick=()=>{S.pos++;save();if(S.pos>=S.order.length)finish();else paintSlip();};
-$("backAdd").onclick=toCollect;
+function paintWho(s){
+  $("whoName").textContent=s.name;
+  $("who").classList.toggle("hidden",!S.shown);$("guess").classList.toggle("hidden",S.shown);
+  $("reveal").classList.toggle("hidden",S.shown);$("pull").classList.toggle("hidden",!S.shown);
+  $("pull").textContent=S.pos+1<S.order.length?"Next slip":"See all the slips";
+}
+$("reveal").onclick=()=>{S.shown=true;save();paintWho(S.slips.find(x=>x.id===S.order[S.pos]));};
+$("pull").onclick=()=>{S.pos++;S.shown=false;save();if(S.pos>=S.order.length)finish();else paintSlip();};
+$("backAdd").onclick=()=>dialog("Add more slips?","You'll go back to adding. Starting the reveal again reshuffles everything.",[{label:"Yes, add more",go:()=>{S.order=[];S.pos=0;save();toCollect();}},{label:"Keep revealing",cls:"btn-quiet"}]);
 
 function finish(){
-  $("all").innerHTML=S.slips.map(s=>`<li><span style="font-family:Caveat,cursive;font-size:24px;line-height:1.15">${esc(s.text)}</span><strong style="color:var(--gold);flex:none">${esc(s.name)}</strong></li>`).join("");
+  S.order=[];S.pos=0;save();
+  $("all").innerHTML=S.slips.map(s=>`<li><span class="t">${esc(s.text)}</span><span class="nm">${esc(s.name)}</span></li>`).join("");
   show("vDone");
 }
 $("again").onclick=startReveal;
 
 function paintManage(){
-  $("mlist").innerHTML=S.slips.length?S.slips.map(s=>`<li><span>${esc(s.name)}</span><button data-id="${s.id}" type="button">Remove</button></li>`).join(""):`<li><span class="muted">No slips yet.</span></li>`;
-  $("mlist").querySelectorAll("button").forEach(b=>b.onclick=()=>{
-    const s=S.slips.find(x=>x.id===b.dataset.id);
-    dialog("Remove this slip?",`${s.name}'s slip will be taken out of the basket.`,[{label:"Remove",go:()=>{S.slips=S.slips.filter(x=>x.id!==s.id);S.order=[];save();paintManage();}},{label:"Keep it",alt:true}]);
-  });
+  $("mlist").innerHTML=S.slips.length?S.slips.map(s=>`<li><button class="btn btn-chip" data-e="${s.id}" type="button">${esc(s.name)}</button><button class="rm" data-r="${s.id}" type="button">Remove</button></li>`).join(""):`<li><span style="color:var(--muted)">No slips yet.</span></li>`;
+  $("mlist").querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.e);dialog(`Hand the phone to ${s.name}`,"Their slip will show on screen so they can fix it. No peeking!",[{label:`I'm ${s.name}, show my slip`,go:()=>editSlip(s)},{label:"Cancel",cls:"btn-quiet"}]);});
+  $("mlist").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.r);dialog("Remove this slip?",`${s.name}'s slip will be taken out of the basket.`,[{label:"Remove it",cls:"btn-hot",go:()=>{S.slips=S.slips.filter(x=>x.id!==s.id);S.order=[];save();paintManage();}},{label:"Keep it",cls:"btn-quiet"}]);});
 }
 $("manage").onclick=()=>{paintManage();show("vManage");};
 $("mBack").onclick=toCollect;
-const wipe=()=>dialog("Start over?","This empties the basket. Every slip will be deleted.",[{label:"Yes, clear it",go:()=>{S={slips:[],order:[],pos:0,lastId:null,editing:null};save();toCollect();}},{label:"Cancel",alt:true}]);
+const wipe=()=>dialog("Start a new game?","This empties the basket. Every slip will be deleted.",[{label:"Yes, clear everything",cls:"btn-hot",go:()=>{S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};save();toCollect();}},{label:"Cancel",cls:"btn-quiet"}]);
 $("clear").onclick=wipe;$("fresh").onclick=wipe;
 
-// Resume where we left off
 if(S.order.length&&S.pos<S.order.length){paintSlip();show("vReveal");}else toCollect();
 }
 </script>
