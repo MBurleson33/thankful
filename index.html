@@ -146,6 +146,17 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
 .dialog p{margin:0 0 18px;color:var(--muted)}
 @keyframes rise{from{transform:translateY(40px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.slip.pull,.who,.dialog{animation:none}}
+
+.rulesFab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 16px);z-index:9;border:3px solid var(--ink);border-radius:999px;background:var(--paper);color:var(--ink);font:800 16px "Bricolage Grotesque",system-ui,sans-serif;padding:10px 16px;box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.rulesFab:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.rulesDlg{max-height:min(82vh,760px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.rulesDlg h2{font-size:28px;margin:0 0 4px}
+.rulesDlg h3{font-size:18px;margin:16px 0 4px;letter-spacing:-.01em}
+.rulesDlg p,.rulesDlg li{color:var(--ink);font-size:16px;line-height:1.45}
+.rulesDlg p{margin:0 0 6px}.rulesDlg ul{margin:0;padding-left:20px}.rulesDlg li{margin-bottom:5px}
+.rulesDlg .tip{background:var(--mist);border-radius:14px;padding:10px 12px;margin:10px 0 4px;font-size:15px}
+.rulesFoot{position:sticky;bottom:-18px;background:var(--paper);padding:12px 0 18px;margin:8px 0 -18px;border-top:2px dashed rgba(0,0,0,.12)}.rulesFoot .btn{margin:0}
+body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 </style>
 </head>
 <body>
@@ -559,6 +570,27 @@ else if(S.order.length&&S.pos<S.order.length){paintSlip();show("vReveal");}
 else if(S.slips.length){ toCollect(); }
 else show("vStart");
 }
+</script>
+<button class="rulesFab" id="rulesFab" type="button" aria-haspopup="dialog">Rules</button>
+<div class="scrim" id="rulesScrim"><div class="sheet dialog rulesDlg" role="dialog" aria-modal="true" aria-label="Rules"><h2>How to play Who's Thankful For That?</h2>
+<p>Everyone secretly writes one thing they're thankful for. Then the group guesses who wrote each one.</p>
+<h3>1. Join and write</h3>
+<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>Write one specific thing you're thankful for. Keep it secret, and don't put your name in it.</li><li>Specific is more fun: "the 6am coffee before the kids wake up" beats "family."</li></ul>
+<h3>2. Read it out loud</h3>
+<ul><li>The host starts the reveal. The same slip shows on every phone.</li><li>Someone reads it out loud so the whole table is on the same one.</li></ul>
+<h3>3. Talk, then vote</h3>
+<ul><li>Talking is encouraged. Make your case ("that is SO Clay"), ask questions, and bluff if it's yours.</li><li>Everyone taps their guess on their phone. You can change it until the host reveals.</li><li>The writer doesn't vote. Keep a straight face!</li></ul>
+<h3>4. Reveal and share</h3>
+<ul><li>The host taps <b>Reveal</b>. Everyone sees who wrote it and who guessed right. Each right guess is 1 point.</li><li>Then the writer gets a moment to share why they're thankful for it. This is the best part, so don't skip it.</li></ul>
+<h3>5. Scoreboard</h3>
+<ul><li>After the last slip, the scoreboard and every slip show up. Most points gets bragging rights.</li><li>The host can start another round with new slips.</li></ul>
+<div class="tip"><b>Only one phone?</b> Use "Pass it around instead." Each person adds a slip and hands the phone on, then the table guesses out loud.</div><div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div></div></div>
+<script>
+{const sc=document.getElementById("rulesScrim");
+document.getElementById("rulesFab").onclick=()=>{sc.classList.add("open");document.getElementById("rulesClose").focus();};
+document.getElementById("rulesClose").onclick=()=>sc.classList.remove("open");
+sc.addEventListener("click",e=>{if(e.target===sc)sc.classList.remove("open");});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")sc.classList.remove("open");});}
 </script>
 </body>
 </html>
