@@ -193,7 +193,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 
   <!-- ONLINE ROOM: writing -->
   <section id="vRoom" class="hidden">
-    <div class="bar"><div><div class="count" id="rCode">ABCD</div><div class="meta">Room code</div></div><button class="btn btn-chip" id="rLeave" type="button">Leave</button></div>
+    <div class="bar"><div><div class="count" id="rCode">ABCD</div><div class="meta">Everyone joins with this code</div></div><button class="btn btn-chip" id="rLeave" type="button">Leave</button></div>
     <div class="sheet" style="margin-bottom:16px" id="writeBox">
       <div id="writeForm">
         <div class="field"><label class="lbl" for="oTx">I'm thankful for…</label><textarea id="oTx" maxlength="200" placeholder="something only you would say"></textarea></div>
@@ -452,7 +452,9 @@ async function api(body,errEl){
 function needName(){ const n=$("oName").value.trim(); if(!n){ $("oErr").textContent="Add your name first."; $("oName").focus(); return null; } O.name=n; oSave(); return n; }
 $("oCode").addEventListener("input",e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,""); });
 $("hostBtn").onclick=async()=>{
-  const name=needName(); if(!name||busy) return; busy=true; $("oErr").textContent=""; $("hostBtn").textContent="Making a room…";
+  const name=needName(); if(!name||busy) return;
+  const typed=$("oCode").value.trim();
+  if(typed){ dialog("Join or host?",`You typed the code ${typed}. To get into that game, tap Join. Host makes a brand-new game with its own code.`,[{label:`Join ${typed}`,go:()=>$("joinBtn").click()},{label:"Host a new game instead",cls:"btn-quiet",go:()=>{ $("oCode").value=""; $("hostBtn").click(); }}]); return; } busy=true; $("oErr").textContent=""; $("hostBtn").textContent="Making a room…";
   try{ const j=await call("POST",{action:"create",pid:O.pid,name}); O.code=j.room.code; oSave(); goOnline(j); }catch(e){ $("oErr").textContent=e.message; }
   busy=false; $("hostBtn").textContent="Host a new game";
 };
