@@ -13,3 +13,7 @@ Open `index.html`, or enable GitHub Pages (Settings → Pages → Deploy from br
 ## Gobble Minds
 
 A second game lives at `/gobble/` (TV mode at `/gobble/tv.html`), using the same Upstash database through `api/gobble.js`. Everyone answers a prompt; matching the most popular answer scores, and a lone unique answer takes the turkey.
+
+## Scribble Telephone
+
+At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write, draw, guess, pass it on; the host reveals each chain step by step. Drawings are stored as compact strokes.
