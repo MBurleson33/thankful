@@ -385,6 +385,7 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
 <div class="net" id="net">Reconnecting…</div>
 <div class="scrim" id="scrim"><div class="sheet dialog" role="dialog" aria-modal="true" aria-labelledby="dT"><h2 id="dT"></h2><p id="dP"></p><div class="stack" id="dB"></div></div></div>
 
+<script src="/party-link.js"></script>
 <script>
 {
 const $=id=>document.getElementById(id);
@@ -645,7 +646,18 @@ function applyO(j){
 }
 
 // Start: rejoin an online game, resume a pass-the-phone game, or show the online start
-if(O.code){ show("vStart"); call("GET").then(goOnline).catch(()=>{ O.code=""; oSave(); }); }
+async function partyStart(){
+  O.pid=PARTY.pid; O.name=PARTY.name; O.code=""; oSave(); show("vStart"); $("oErr").textContent="Joining the party…";
+  for(let i=0;i<60;i++){
+    try{
+      const j=PARTY.host ? await call("POST",{action:"create",pid:O.pid,name:O.name,want:PARTY.code}) : await call("POST",{action:"join",pid:O.pid,code:PARTY.code,name:O.name});
+      O.code=j.room.code; oSave(); $("oErr").textContent=""; goOnline(j); return;
+    }catch(e){ if(e.status===404){ $("oErr").textContent="Waiting for the host to open this game…"; await new Promise(r=>setTimeout(r,1500)); continue; } $("oErr").textContent=e.message; return; }
+  }
+  $("oErr").textContent="Couldn't reach the host's game. Ask them to open it, then refresh.";
+}
+if(window.PARTY&&!window.PARTY.tv){ partyStart(); }
+else if(O.code){ show("vStart"); call("GET").then(goOnline).catch(()=>{ O.code=""; oSave(); }); }
 else if(S.order.length&&S.pos<S.order.length){paintSlip();show("vReveal");}
 else if(S.slips.length){ toCollect(); }
 else show("vStart");

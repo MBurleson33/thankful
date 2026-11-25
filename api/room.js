@@ -91,12 +91,21 @@ module.exports = async (req, res) => {
       const name = cleanName(body.name);
       if (!name) return send(400, { error: "Add your name first." });
       const L = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-      for (let tries = 0; tries < 8; tries++) {
+      const want = CODE_RE.test(String(body.want || "").toUpperCase()) ? String(body.want).toUpperCase() : "";
+      for (let tries = 0; tries < (want ? 1 : 8); tries++) {
         let code = ""; for (let i = 0; i < 4; i++) code += L[Math.floor(Math.random() * L.length)];
+        if (want) code = want;
         const room = { code, hostId: pid, phase: "collect", order: [], pos: 0, shown: false, scores: {}, round: 1, prompt: "" };
         const k = K(code);
         const [ok] = await redis([["SET", k.room, JSON.stringify(room), "NX", "EX", TTL]]);
-        if (ok !== "OK") continue;
+        if (ok !== "OK") {
+          if (!want) continue;
+          // Party mode: the room for this party code already exists
+          const ex = await loadRaw(want);
+          if (!ex) continue;
+          if (ex.room.hostId !== pid) return send(409, { error: "That party code is already in use by another game. Start a new party." });
+          return send(200, view(ex, pid));
+        }
         await redis([["HSET", k.players, pid, JSON.stringify({ name, t: Date.now() })], ["EXPIRE", k.players, TTL]]);
         return send(200, view(await loadRaw(code), pid));
       }

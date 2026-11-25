@@ -225,6 +225,7 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 <script src="../festive.js"></script>
 <script src="common.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="/party-link.js"></script>
 <script>
 {
 const $=id=>document.getElementById(id);
@@ -252,7 +253,7 @@ async function start(c){
   c=(c||"").toUpperCase();
   if(!/^[A-Z]{4}$/.test(c)){ $("entryErr").textContent="Type the 4-letter code from the host's phone."; return; }
   code=c; $("entryErr").textContent="";
-  try{ const j=await fetchRoom(); history.replaceState(null,"",`?code=${code}`); render(j); clearInterval(poller); poller=setInterval(tick,1500); wake(); }
+  try{ const j=await fetchRoom(); history.replaceState(null,"",`?code=${code}${window.PARTY?`&party=${window.PARTY.code}`:""}`); render(j); clearInterval(poller); poller=setInterval(tick,1500); wake(); }
   catch(e){ $("entryErr").textContent=e.message; code=""; }
 }
 async function tick(){

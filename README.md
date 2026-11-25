@@ -17,3 +17,7 @@ A second game lives at `/gobble/` (TV mode at `/gobble/tv.html`), using the same
 ## Scribble Telephone
 
 At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write, draw, guess, pass it on; the host reveals each chain step by step. Drawings are stored as compact strokes.
+
+## Party mode
+
+`/party/` lets everyone join once; the host picks a game and every phone (and `/party/tv.html`) follows. Each game room reuses the party code (`want` on create). `party-link.js` adds the party bar and follows switches. Chameleon is also served here at `/chameleon/` via `api/chameleon.js` (same data prefix as the standalone Chameleon project).
