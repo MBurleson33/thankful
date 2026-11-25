@@ -173,8 +173,10 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
 .rulesFoot{position:sticky;bottom:-18px;background:var(--paper);padding:12px 0 18px;margin:8px 0 -18px;border-top:2px dashed rgba(0,0,0,.12)}.rulesFoot .btn{margin:0}
 body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 </style>
+<link rel="stylesheet" href="festive.css">
 </head>
 <body>
+<script src="festive.js"></script>
 <div class="wrap">
   <div class="hero">
     <h1>Who's Thankful For That?</h1>
@@ -183,7 +185,8 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 
   <!-- ONLINE START -->
   <section id="vStart" class="hidden">
-    <p class="tagline">Everyone writes one thing they're thankful for on their own phone. Then guess who wrote each one.</p>
+    <div class="hello">Happy Thanksgiving!</div>
+    <p class="tagline" style="margin-top:4px">Everyone writes one thing they're thankful for on their own phone. Then guess who wrote each one.</p>
     <div class="sheet">
       <div class="field"><label class="lbl" for="oName">Your name</label><input class="inp" id="oName" maxlength="20" autocomplete="off" placeholder="First name"></div>
       <button class="btn btn-go" id="hostBtn" type="button">Host a new game</button>
@@ -428,7 +431,7 @@ function paintWho(s){
   $("reveal").classList.toggle("hidden",S.shown);$("pull").classList.toggle("hidden",!S.shown);
   $("pull").textContent=S.pos+1<S.order.length?"Next answer":"See all the answers";
 }
-$("reveal").onclick=()=>{S.shown=true;save();paintWho(S.slips.find(x=>x.id===S.order[S.pos]));};
+$("reveal").onclick=()=>{S.shown=true;save();paintWho(S.slips.find(x=>x.id===S.order[S.pos]));setTimeout(()=>window.leafBurst&&leafBurst($("who")),60);};
 $("pull").onclick=()=>{S.pos++;S.shown=false;save();if(S.pos>=S.order.length)finish();else paintSlip();};
 $("backAdd").onclick=()=>dialog("Add more answers?","You'll go back to adding. Starting the reveal again reshuffles everything.",[{label:"Yes, add more",go:()=>{S.order=[];S.pos=0;save();toCollect();}},{label:"Keep revealing",cls:"btn-quiet"}]);
 
@@ -581,6 +584,7 @@ function paintReveal(){
     const mineRight = sl.right.includes(O.name);
     $("oRight").textContent = sl.right.length ? `Guessed right: ${sl.right.join(", ")}${mineRight?" (nice!)":""}` : "Nobody guessed it!";
     $("oRight").classList.remove("hidden");
+    if(!L.shown || L.pos!==r.pos || L.phase!=="reveal") setTimeout(()=>window.leafBurst&&leafBurst($("oWho")),60);
     $("oBD").innerHTML=(sl.breakdown||[]).map(b=>`<span class="${b.correct?"ok":""}">${esc(b.name)} ${b.n}</span>`).join("");
     $("oBD").classList.toggle("hidden",!(sl.breakdown||[]).length);
   }
@@ -605,7 +609,7 @@ function applyO(j){
   if(L.round && L.round!==r.round){ L.editing=false; $("oTx").value=""; }
   if(r.phase==="collect"){ if(changed) show("vRoom"); paintRoom(); }
   else if(r.phase==="reveal"){ if(changed) show("vOReveal"); paintReveal(); }
-  else { if(changed) show("vODone"); paintDone(); }
+  else { if(changed){ show("vODone"); setTimeout(()=>window.leafBurst&&leafBurst($("dScores"),30),200); } paintDone(); }
   L.phase=r.phase; L.pos=r.pos; L.shown=r.shown; L.round=r.round;
 }
 

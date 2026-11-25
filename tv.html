@@ -118,8 +118,10 @@ body{background:radial-gradient(120% 90% at 50% 0%,var(--pump) 0%,var(--pump-dee
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="festive.css">
 </head>
-<body>
+<body class="tv">
+<script src="festive.js"></script>
 <div class="stage">
   <div class="top">
     <div class="brand"><svg viewBox="0 0 84 84" aria-hidden="true"><g stroke="#3a1d12" stroke-width="3" stroke-linejoin="round"><rect x="22" y="12" width="20" height="28" rx="3" fill="#fffdf6" transform="rotate(-14 32 26)"/><rect x="40" y="8" width="20" height="30" rx="3" fill="#ffd447" transform="rotate(12 50 23)"/><path d="M10 40h64l-7 30a6 6 0 0 1-6 5H23a6 6 0 0 1-6-5z" fill="#a8622c"/><path d="M15 52h54M17 62h50" fill="none" stroke-width="2.5"/><rect x="6" y="36" width="72" height="9" rx="4.5" fill="#c2334a"/></g></svg>Who's Thankful For That?</div>
@@ -147,6 +149,7 @@ body{background:radial-gradient(120% 90% at 50% 0%,var(--pump) 0%,var(--pump-dee
       <div class="qr" id="qr" aria-label="QR code to join"></div>
     </div>
     <div class="right">
+      <div class="hello">Happy Thanksgiving!</div>
       <div class="pcard"><div class="k">THIS ROUND'S PROMPT</div><div class="q" id="cPrompt"></div></div>
       <div class="sheet roster"><div class="head" id="cHead">Waiting for players</div><div class="chips" id="cChips"></div></div>
     </div>
@@ -251,6 +254,7 @@ function render(j){
         ? `<div class="h">${sl.right.length?`Guessed right: ${esc(sl.right.join(", "))}`:"Nobody guessed it!"}</div>`+bd.map(b=>`<div class="bar ${b.correct?"ok":""}"><span class="nm">${esc(b.name)}</span><span class="track"><span class="fill" data-w="${Math.round(b.n/total*100)}"></span></span><span class="c">${b.n}</span></div>`).join("")
         : `<div class="h">Nobody voted on this one.</div>`;
       requestAnimationFrame(()=>requestAnimationFrame(()=>$("aBars").querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%")));
+      setTimeout(()=>window.leafBurst&&leafBurst($("aName")),200);
     }
   }
   else {
@@ -258,6 +262,7 @@ function render(j){
       show("vDone");
       const sc=r.scores||{}, rows=P.map(p=>({n:p.name,s:sc[p.id]||0})).sort((a,b)=>b.s-a.s), top=rows.length?rows[0].s:0;
       $("dBoard").innerHTML=rows.map(x=>`<div class="row ${x.s===top&&top>0?"lead":""}"><span class="medal">${x.s===top&&top>0?"★":""}</span><span class="nm">${esc(x.n)}</span><span>${x.s}</span></div>`).join("");
+      setTimeout(()=>window.leafBurst&&leafBurst($("dBoard"),60),300);
       $("dWall").innerHTML=`<div class="title wallTitle" style="font-size:clamp(22px,2.4vw,42px)">What this room is thankful for</div>`+(j.all||[]).map(s=>`<div class="card"><div class="t">${esc(s.text)}</div><div class="n">${esc(s.name)}</div></div>`).join("");
     }
   }
