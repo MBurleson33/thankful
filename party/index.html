@@ -224,20 +224,22 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
   <div class="hero"><h1>Game Night</h1><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="14" width="24" height="34" rx="3" transform="rotate(-12 26 31)" fill="#fffcf7" stroke="#b08a3e" stroke-width="1.4"/><rect x="26" y="12" width="24" height="34" rx="3" transform="rotate(10 38 29)" fill="#f6eedb" stroke="#b08a3e" stroke-width="1.4"/><path d="M38 24c2-3 6-2 6 1 0 3-6 7-6 7s-6-4-6-7c0-3 4-4 6-1z" transform="rotate(10 38 29)" fill="#8e2638"/><circle cx="21" cy="22" r="1.6" fill="#2f4a3a"/><circle cx="31" cy="42" r="1.6" fill="#2f4a3a"/></svg></div>
 
   <section id="vStart" class="hidden">
-    <div class="hello">Party mode</div>
+    <div class="hello">Host or join</div>
     <p class="tagline" style="margin-top:4px">Join once. The host picks the games, and everyone's phone follows along.</p>
     <div class="sheet">
       <div class="field"><label class="lbl" for="oName">Your name</label><input id="oName" maxlength="20" autocomplete="off" placeholder="First name"></div>
-      <button class="btn btn-go" id="hostBtn" type="button">Host a party</button>
-      <div class="or">or join a party</div>
+      <button class="btn btn-go" id="hostBtn" type="button">Host a game night</button>
+      <div class="or" id="orJoin">or join with a code</div>
       <div class="codeRow">
         <input class="codeInp" id="oCode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE">
         <button class="btn btn-chip" id="joinBtn" type="button">Join</button>
       </div>
       <div class="err" id="oErr" style="margin:12px 0 0"></div>
+      <button class="btn btn-go hidden" id="bigJoin" type="button">Join</button>
     </div>
+    <button class="btn btn-quiet offLink hidden" id="hostInstead" type="button">Want to host your own game night instead?</button>
     <div class="rules">
-      <h2>How party mode works</h2>
+      <h2>How game night works</h2>
       <ul>
         <li>One person hosts and reads out the code. Everyone else joins with it, just once.</li>
         <li>The host picks a game, and everyone's phone jumps right in.</li>
@@ -245,7 +247,6 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
       </ul>
     </div>
     <a class="tvLink" href="tv.html">Showing the party on a TV? Open TV mode</a>
-    <a class="tvLink" href="https://mburleson33.github.io/games/" style="margin-top:8px;font-weight:500">Just want to play one game? See all games</a>
   </section>
 
   <section id="vLobby" class="hidden">
@@ -294,7 +295,18 @@ const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(M)); }catch(e){} }
 save();
 $("oName").value=M.name||"";
 const qc=(new URLSearchParams(location.search).get("code")||"").toUpperCase();
-if(/^[A-Z]{4}$/.test(qc)) $("oCode").value=qc;
+if(/^[A-Z]{4}$/.test(qc)){
+  // Arrived with a code: make joining the only obvious step
+  $("oCode").value=qc;
+  ["hostBtn","orJoin"].forEach(id=>$(id).classList.add("hidden"));
+  $("oCode").closest(".codeRow").classList.add("hidden");
+  $("bigJoin").textContent=`Join game night ${qc}`; $("bigJoin").classList.remove("hidden"); $("hostInstead").classList.remove("hidden");
+  document.querySelector("#vStart .hello").textContent="You're invited";
+  document.querySelector("#vStart .tagline").textContent="Type your name and tap Join. The host picks the games, and your phone follows along.";
+  $("bigJoin").onclick=()=>$("joinBtn").click();
+  $("oName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("joinBtn").click(); });
+  $("hostInstead").onclick=()=>{ ["hostBtn","orJoin","hostInstead","bigJoin"].forEach(id=>$(id).classList.toggle("hidden",id==="bigJoin"||id==="hostInstead")); $("oCode").closest(".codeRow").classList.remove("hidden"); $("oCode").value=""; };
+}
 
 let V=null, poller=null, busy=false, fails=0, choice="", going=false;
 async function call(method,body){
@@ -310,9 +322,9 @@ $("hostBtn").onclick=async()=>{
   const name=needName(); if(!name||busy) return;
   const typed=$("oCode").value.trim();
   if(typed){ dialog("Join or host?",`You typed the code ${typed}. To get into that party, tap Join. Host starts a brand-new party with its own code.`,[{label:`Join ${typed}`,go:()=>$("joinBtn").click()},{label:"Host a new party instead",cls:"btn-quiet",go:()=>{ $("oCode").value=""; $("hostBtn").click(); }}]); return; }
-  busy=true; $("oErr").textContent=""; $("hostBtn").textContent="Starting a party…";
+  busy=true; $("oErr").textContent=""; $("hostBtn").textContent="Setting it up…";
   try{ const j=await call("POST",{action:"create",pid:M.pid,name}); M.code=j.room.code; M.hostId=j.room.hostId; save(); goOnline(j); }catch(e){ $("oErr").textContent=e.message; }
-  busy=false; $("hostBtn").textContent="Host a party";
+  busy=false; $("hostBtn").textContent="Host a game night";
 };
 $("joinBtn").onclick=async()=>{
   const name=needName(); if(!name||busy) return;
