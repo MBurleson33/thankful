@@ -174,6 +174,9 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 .winnerTV .k{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:clamp(18px,1.8vw,32px)}
 .winnerTV b{display:block;font-family:var(--serif);font-weight:600;color:var(--forest);font-size:clamp(52px,6.4vw,120px);line-height:1}
 .winnerTV .rows{margin-top:2vw;text-align:left}
+.g.vetoed{opacity:.5}.g.vetoed .lab{text-decoration:line-through}
+.g.uniq .fill{background:var(--forest)}.g.uniq .lab{color:var(--forest);font-weight:600}
+.g.copy .fill{background:var(--cran)}.g.copy .lab{color:var(--cran);font-weight:600}
 .review{color:var(--muted);font-family:var(--serif);font-style:italic;font-size:clamp(18px,1.7vw,30px)}
 </style>
 </head>
@@ -204,7 +207,7 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
     </div>
     <div class="right">
       <div class="hello">Happy Thanksgiving!</div>
-      <div class="pcard"><div class="k">How it works</div><div class="q" style="font-size:clamp(24px,2.4vw,44px)">Answer the way you think everyone else will. Match the table to score. Don't be the lone turkey.</div></div>
+      <div class="pcard"><div class="k" id="lK">Gobble Minds</div><div class="q" id="lHow" style="font-size:clamp(24px,2.4vw,44px)">Answer the way you think everyone else will. Match the table to score. Don't be the lone turkey.</div></div>
       <div class="sheet roster"><div class="head" id="lHead">Waiting for players</div><div class="chips" id="lChips"></div></div>
     </div>
   </main>
@@ -286,12 +289,15 @@ function render(j){
   $("pill").classList.toggle("hidden",r.phase==="lobby"); $("pillCode").textContent=r.code;
   if(r.phase==="lobby"){
     if(changed){ show("vLobby"); $("bigCode").textContent=r.code; qr(); }
+    const odd=r.mode==="odd";
+    $("lK").textContent=odd?"Odd Bird mode":"Gobble Minds";
+    $("lHow").textContent=odd?"Give an answer nobody else will. Unique answers score. The most common answer loses a point.":"Answer the way you think everyone else will. Match the table to score. Don't be the lone turkey.";
     $("lHead").textContent=P.length?`${P.length} player${P.length===1?"":"s"} in`:"Waiting for players to join";
     $("lChips").innerHTML=P.map(p=>`<span class="chip on"><i>✓</i>${esc(p.name)}</span>`).join("");
   }
   else if(r.phase==="answer"){
     if(changed){ show("vAnswer"); L.answered={}; }
-    $("aRound").textContent=`Round ${r.round} · playing to ${r.target}`; $("aPrompt").textContent=r.prompt;
+    $("aRound").textContent=`${r.mode==="odd"?"Odd Bird · be the only one":"Match the table"} · round ${r.round} · playing to ${r.target}`; $("aPrompt").textContent=r.prompt;
     const n=P.filter(p=>p.answered).length;
     $("aChips").innerHTML=P.map(p=>`<span class="chip ${p.answered?"on":""} ${p.answered&&!L.answered[p.id]?"pop":""}"><i>${p.answered?"✓":"…"}</i>${esc(p.name)}</span>`).join("");
     P.forEach(p=>{ if(p.answered) L.answered[p.id]=1; });
@@ -301,9 +307,16 @@ function render(j){
     if(changed) show("vResults");
     const reveal=r.phase==="reveal", res=j.result||{};
     const groups=(j.groups||[]).slice().sort((a,b)=>b.ids.length-a.ids.length), max=groups.length?groups[0].ids.length:1;
-    const lone=groups.filter(g=>g.ids.length===1).length===1;
+    const odd=r.mode==="odd", uk=new Set(res.uniqueKeys||[]);
+    const lone=!odd&&groups.filter(g=>!g.vetoed&&g.ids.length===1).length===1;
     $("rPrompt").textContent=`Round ${r.round}: ${r.prompt}`;
-    if(!reveal) $("rBanner").innerHTML=`<div class="review">The host is matching up answers that mean the same thing…</div>`;
+    if(!reveal) $("rBanner").innerHTML=`<div class="review">${odd?"The host is matching answers and striking ones that don't fit…":"The host is matching up answers that mean the same thing…"}</div>`;
+    else if(changed&&odd){
+      const u=(res.uniques||[]).map(nm), c=(res.copycats||[]).map(nm), cg=groups.find(g=>g.key===res.copyKey);
+      $("rBanner").innerHTML=(u.length?`<div class="banner"><b>${u.length} unique answer${u.length===1?"":"s"}</b><span>+1 to ${esc(u.join(", "))}</span></div>`:`<div class="banner none"><b>No unique answers</b><span>Great minds think alike. Nobody scores.</span></div>`)
+        +(cg?`<div class="tnote" style="margin-top:1vw">${document.querySelector(".brand svg").outerHTML}<div><b>Copycats: ${esc(c.join(", "))}</b><span>"${esc(cg.label)}" was the most common answer. −1 each.</span></div></div>`:"");
+      if(u.length) setTimeout(()=>window.leafBurst&&leafBurst($("rBanner")),150);
+    }
     else if(changed){
       const win=groups.find(g=>g.key===res.topKey);
       $("rBanner").innerHTML=(win?`<div class="banner"><b>${esc(win.label)}</b><span>${win.ids.length} matched · +1 to ${esc(win.ids.map(nm).join(", "))}</span></div>`
@@ -311,7 +324,7 @@ function render(j){
         +(res.turkeyMoved?`<div class="tnote" style="margin-top:1vw">${document.querySelector(".brand svg").outerHTML}<div><b>${esc(nm(res.turkey))} gets the turkey</b><span>The only one with that answer. Can't win while holding it.</span></div></div>`:"");
       if(win) setTimeout(()=>window.leafBurst&&leafBurst($("rBanner")),150);
     }
-    $("rGroups").innerHTML=groups.map(g=>`<div class="g ${reveal&&g.key===res.topKey?"win":""} ${reveal&&lone&&g.ids.length===1?"lone":""}"><span class="lab">${esc(g.label)}</span><span class="track"><span class="fill" data-w="${Math.round(g.ids.length/max*100)}"></span></span><span class="c">${g.ids.length}</span><span class="names">${esc(g.ids.map(nm).join(", "))}</span></div>`).join("");
+    $("rGroups").innerHTML=groups.map(g=>`<div class="g ${g.vetoed?"vetoed":""} ${reveal&&!odd&&g.key===res.topKey?"win":""} ${reveal&&odd&&uk.has(g.key)?"uniq":""} ${reveal&&odd&&g.key===res.copyKey?"copy":""} ${reveal&&lone&&!g.vetoed&&g.ids.length===1?"lone":""}"><span class="lab">${esc(g.label)}</span><span class="track"><span class="fill" data-w="${Math.round(g.ids.length/max*100)}"></span></span><span class="c">${g.ids.length}</span><span class="names">${esc(g.ids.map(nm).join(", "))}</span></div>`).join("");
     requestAnimationFrame(()=>requestAnimationFrame(()=>$("rGroups").querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%")));
     board(j,$("rBoard"));
   }

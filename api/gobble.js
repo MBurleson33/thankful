@@ -24,6 +24,18 @@ const PROMPTS = [
   "Name a nut", "A reason to give thanks today", "Something that gets passed around the table",
 ];
 
+// Odd Bird mode: narrow categories, so a truly unique answer takes some thought
+const ODD_PROMPTS = [
+  "Name a pie", "A Thanksgiving side dish", "A book of the Bible", "A U.S. state", "A kind of nut",
+  "A fall vegetable", "A breakfast cereal", "A pizza topping", "A Christmas song", "A board game",
+  "A dog breed", "A fast food restaurant", "A color of the rainbow", "A kitchen appliance", "One of Jesus' 12 disciples",
+  "A U.S. president", "A spice in your cabinet", "An NFL team", "A type of bread", "A farm animal",
+  "A fruit", "A candy bar", "A Thanksgiving dessert", "A Christmas tradition", "A hero from the Bible",
+  "A holiday", "A country in Europe", "A flavor of ice cream", "A sport", "A city in Oklahoma",
+  "A flavor of pie filling", "A hymn", "A Christmas movie", "A cheese", "A type of soup", "A topping for mashed potatoes",
+];
+const promptList = mode => mode === "odd" ? ODD_PROMPTS : PROMPTS;
+
 async function redis(cmds) {
   const r = await fetch(`${URL_}/pipeline`, {
     method: "POST",
@@ -60,12 +72,13 @@ function autoGroups(answers) {
 }
 
 function pickPrompt(room) {
-  const used = new Set(room.used || []);
-  let pool = PROMPTS.map((_, i) => i).filter(i => !used.has(i));
-  if (!pool.length) { room.used = []; pool = PROMPTS.map((_, i) => i); }
-  const i = pool[Math.floor(Math.random() * pool.length)];
-  room.used = [...(room.used || []), i];
-  return PROMPTS[i];
+  const list = promptList(room.mode);
+  const used = new Set((room.used || []).map(String));
+  let pool = list.filter(t => !used.has(t));
+  if (!pool.length) { room.used = []; pool = list.slice(); }
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  room.used = [...(room.used || []), t];
+  return t;
 }
 
 async function loadRaw(code) {
@@ -81,7 +94,7 @@ async function loadRaw(code) {
 function view(raw, me) {
   const { room, players, answers } = raw;
   const out = {
-    room: { code: room.code, hostId: room.hostId, phase: room.phase, round: room.round, prompt: room.prompt, scores: room.scores, turkey: room.turkey || null, target: room.target },
+    room: { code: room.code, hostId: room.hostId, phase: room.phase, round: room.round, prompt: room.prompt, scores: room.scores, turkey: room.turkey || null, target: room.target, mode: room.mode || "herd" },
     players: players.map(p => ({ id: p.id, name: p.name, answered: !!answers[p.id] })),
     myAnswer: answers[me] || "",
   };
@@ -121,7 +134,7 @@ module.exports = async (req, res) => {
       const L = "ABCDEFGHJKLMNPQRSTUVWXYZ";
       for (let tries = 0; tries < 8; tries++) {
         let code = ""; for (let i = 0; i < 4; i++) code += L[Math.floor(Math.random() * L.length)];
-        const room = { code, hostId: pid, phase: "lobby", round: 0, prompt: "", scores: {}, turkey: null, groups: [], result: null, used: [], target: 8 };
+        const room = { code, hostId: pid, phase: "lobby", round: 0, prompt: "", scores: {}, turkey: null, groups: [], result: null, used: [], target: 8, mode: "herd" };
         const k = K(code);
         const [ok] = await redis([["SET", k.room, JSON.stringify(room), "NX", "EX", TTL]]);
         if (ok !== "OK") continue;
@@ -165,10 +178,21 @@ module.exports = async (req, res) => {
       if (action === "kick") {
         const who = cleanId(body.who);
         if (who && who !== room.hostId) await redis([["HDEL", k.players, who], ["HDEL", k.answers, who]]);
+      } else if (action === "mode") {
+        if (room.phase !== "lobby") return send(400, { error: "Pick the mode in the lobby." });
+        room.mode = body.mode === "odd" ? "odd" : "herd"; room.used = [];
+        await saveRoom();
+      } else if (action === "veto") {
+        if (room.phase !== "review") return send(400, { error: "You can only strike answers before scoring." });
+        const g = room.groups.find(x => x.key === String(body.key));
+        if (!g) return send(400, { error: "That answer is gone. Try again." });
+        g.vetoed = !g.vetoed;
+        await saveRoom();
       } else if (action === "start") {
         if (raw.players.length < 3) return send(400, { error: "You need at least 3 players." });
         const t = +body.target; if ([5, 8, 10, 12].includes(t)) room.target = t;
-        room.scores = {}; room.turkey = null; room.round = 0;
+        if (body.mode === "odd" || body.mode === "herd") room.mode = body.mode;
+        room.scores = {}; room.turkey = null; room.round = 0; room.used = [];
         await newRound(); await saveRoom();
       } else if (action === "swap") {
         if (room.phase !== "answer") return send(400, { error: "You can only swap the prompt while people are answering." });
@@ -185,7 +209,7 @@ module.exports = async (req, res) => {
         const pick = room.groups.filter(g => keys.includes(g.key));
         if (pick.length < 2) return send(400, { error: "Pick at least two answers to merge." });
         const main = pick.slice().sort((a, b) => b.ids.length - a.ids.length)[0];
-        const merged = { key: pick.map(g => g.key).join("+"), label: main.label, ids: pick.flatMap(g => g.ids), parts: pick.flatMap(g => g.parts || [g.label]) };
+        const merged = { key: pick.map(g => g.key).join("+"), label: main.label, ids: pick.flatMap(g => g.ids), parts: pick.flatMap(g => g.parts || [g.label]), vetoed: pick.every(g => g.vetoed) };
         room.groups = room.groups.filter(g => !keys.includes(g.key)).concat(merged);
         await saveRoom();
       } else if (action === "unmerge") {
@@ -193,7 +217,22 @@ module.exports = async (req, res) => {
         room.groups = autoGroups(raw.answers); await saveRoom();
       } else if (action === "score") {
         if (room.phase !== "review") return send(400, { error: "Show the answers first." });
-        const groups = room.groups.slice().sort((a, b) => b.ids.length - a.ids.length);
+        const vetoed = room.groups.filter(g => g.vetoed).map(g => g.key);
+        if (room.mode === "odd") {
+          const valid = room.groups.filter(g => !g.vetoed).sort((a, b) => b.ids.length - a.ids.length);
+          const uniques = valid.filter(g => g.ids.length === 1);
+          uniques.forEach(g => { const id = g.ids[0]; room.scores[id] = (room.scores[id] || 0) + 1; });
+          const top = valid[0] ? valid[0].ids.length : 0;
+          const tiedTop = valid.filter(g => g.ids.length === top).length > 1;
+          const copy = (top >= 2 && !tiedTop) ? valid[0] : null;
+          if (copy) copy.ids.forEach(id => { room.scores[id] = Math.max(0, (room.scores[id] || 0) - 1); });
+          room.result = { mode: "odd", uniqueKeys: uniques.map(g => g.key), uniques: uniques.map(g => g.ids[0]), copyKey: copy ? copy.key : null, copycats: copy ? copy.ids : [], vetoed };
+          room.result.over = Object.values(room.scores).some(v => v >= room.target);
+          room.phase = "reveal";
+          await saveRoom();
+          return send(200, view(await loadRaw(code), pid));
+        }
+        const groups = room.groups.filter(g => !g.vetoed).sort((a, b) => b.ids.length - a.ids.length);
         const top = groups[0] ? groups[0].ids.length : 0;
         const tied = groups.filter(g => g.ids.length === top).length > 1;
         const winners = (!tied && top >= 2) ? groups[0].ids : [];
@@ -201,7 +240,7 @@ module.exports = async (req, res) => {
         const loners = groups.filter(g => g.ids.length === 1);
         let turkeyMoved = false, prevTurkey = room.turkey || null;
         if (loners.length === 1 && raw.players.length >= 3) { room.turkey = loners[0].ids[0]; turkeyMoved = room.turkey !== prevTurkey; }
-        room.result = { topKey: winners.length ? groups[0].key : null, winners, tied: tied && top >= 1, allDifferent: top < 2, turkey: room.turkey, turkeyMoved, prevTurkey };
+        room.result = { mode: "herd", topKey: winners.length ? groups[0].key : null, winners, tied: tied && top >= 1, allDifferent: top < 2, turkey: room.turkey, turkeyMoved, prevTurkey, vetoed };
         // game over: someone reached the target without holding the turkey
         const champs = Object.entries(room.scores).filter(([id, s]) => s >= room.target && id !== room.turkey);
         room.result.over = champs.length > 0;

@@ -237,6 +237,19 @@ button.grp{cursor:pointer}
 .goal button{flex:1;min-width:60px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font-weight:600;cursor:pointer}
 .goal button.sel{background:var(--forest);color:#fbf6ec;border-color:var(--forest)}
 .selBar{display:grid;gap:10px;margin-top:6px}
+.modes{display:grid;gap:10px;margin:4px 0 18px}
+.mode{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit;color:inherit}
+.mode b{display:block;font-family:var(--serif);font-weight:600;font-size:19px}
+.mode span{font-size:14px;color:var(--muted)}
+.mode.sel{border-color:var(--forest);box-shadow:0 0 0 2px var(--forest)}
+.modeTag{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--gold-soft)}
+.gsel{display:block;width:100%;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.veto{display:block;background:none;border:0;padding:8px 0 0;color:var(--cran);font-weight:600;font-size:13px;text-decoration:underline;cursor:pointer;min-height:32px}
+.grp.vetoed{opacity:.6}.grp.vetoed .lab{text-decoration:line-through}
+.grp .vtag{display:inline-block;margin-top:6px;color:var(--cran);font-weight:600;font-size:13px}
+.grp.copy{border-color:var(--cran);box-shadow:0 0 0 1px var(--cran)}
+.grp .ctag{display:inline-block;margin-top:6px;color:var(--cran);font-weight:600;font-size:13px}
+.grp.win .utag{display:inline-block;margin-top:6px;color:var(--gold-soft);font-weight:600;font-size:13px}
 .winner{text-align:center;padding:26px 20px}
 .winner svg{width:72px;height:72px;margin:0 auto 6px;display:block}
 .winner .k{font-family:var(--serif);font-style:italic;color:var(--muted)}
@@ -282,19 +295,24 @@ button.grp{cursor:pointer}
       <ul class="plist" id="lList"></ul>
     </div>
     <div id="lHost" class="hidden">
+      <div class="lbl">Game mode</div>
+      <div class="modes" id="modes">
+        <button class="mode sel" type="button" data-m="herd"><b>Gobble Minds</b><span>Match the table. Everyone with the most popular answer scores.</span></button>
+        <button class="mode" type="button" data-m="odd"><b>Odd Bird</b><span>Be the only one. Unique answers score, and the most common answer loses a point.</span></button>
+      </div>
       <div class="lbl">Play to</div>
       <div class="goal" id="goal"><button type="button" data-g="5">5 points</button><button type="button" data-g="8" class="sel">8 points</button><button type="button" data-g="10">10 points</button></div>
       <button class="btn btn-go" id="lStart" type="button">Start the game</button>
       <p class="hint" id="lHint" style="text-align:center"></p>
       <button class="btn btn-quiet offLink" id="lTv" type="button">Show it on a TV or laptop</button>
     </div>
-    <p class="wait hidden" id="lWait"><span class="dotty">Waiting for the host to start</span></p>
+    <p class="wait hidden" id="lWait"></p>
   </section>
 
   <!-- ANSWER -->
   <section id="vAnswer" class="hidden">
     <div class="bar"><div><div class="count" id="aRound">Round 1</div><div class="meta" id="aCode">Code ABCD</div></div><button class="btn btn-chip" id="aLeave" type="button">Leave</button></div>
-    <div class="pcard"><div class="k">The prompt</div><div class="q" id="aPrompt"></div><button class="btn btn-chip hidden" id="aSwap" type="button">Swap prompt</button></div>
+    <div class="pcard"><div class="k" id="aK">The prompt</div><div class="q" id="aPrompt"></div><button class="btn btn-chip hidden" id="aSwap" type="button">Swap prompt</button></div>
     <div class="sheet hidden" id="swapBox" style="margin-bottom:16px">
       <div class="field"><label class="lbl" for="swapIn">Type your own prompt, or draw a new one</label><input id="swapIn" maxlength="90" placeholder="e.g. Name a Christmas song"></div>
       <div class="stack"><button class="btn btn-go" id="swapCustom" type="button">Use my prompt</button><button class="btn btn-quiet" id="swapDraw" type="button">Draw a random prompt</button></div>
@@ -302,9 +320,10 @@ button.grp{cursor:pointer}
     </div>
     <div class="sheet" style="margin-bottom:16px">
       <div id="ansForm">
-        <div class="field"><label class="lbl" for="ansIn">What will most people say?</label><input class="ansIn" id="ansIn" maxlength="40" autocomplete="off" placeholder="Your answer"></div>
+        <div class="field"><label class="lbl" for="ansIn" id="ansLbl">What will most people say?</label><input class="ansIn" id="ansIn" maxlength="40" autocomplete="off" placeholder="Your answer"></div>
         <div class="err" id="ansErr"></div>
         <button class="btn btn-go" id="ansSend" type="button">Lock it in</button>
+        <p class="hint hidden" id="oddHint">It has to really fit the prompt. The host can strike answers that don't count.</p>
       </div>
       <div id="ansDone" class="hidden">
         <div class="okline"><i>✓</i>Locked in</div>
@@ -329,7 +348,7 @@ button.grp{cursor:pointer}
     <div id="rHostReview" class="hidden selBar">
       <button class="btn btn-go" id="rMerge" type="button" disabled>Merge selected answers</button>
       <button class="btn btn-hot" id="rScore" type="button">Score this round</button>
-      <button class="btn btn-quiet" id="rUnmerge" type="button">Undo merges</button>
+      <button class="btn btn-quiet" id="rUnmerge" type="button">Start matching over</button>
     </div>
     <div id="rHostReveal" class="hidden stack">
       <button class="btn btn-go" id="rNext" type="button">Next prompt</button>
@@ -367,6 +386,8 @@ button.grp{cursor:pointer}
 <ul><li>Everyone in the single <b>biggest group</b> gets 1 point.</li><li>If two groups tie for biggest, or everyone said something different, nobody scores.</li></ul>
 <h3>5. The turkey</h3>
 <ul><li>If exactly one person gave an answer nobody else did, they get the turkey.</li><li>You <b>can't win while holding the turkey</b>. It moves to the next person who's the only one with their answer.</li></ul>
+<h3>Odd Bird mode</h3>
+<ul><li>Flip it around: try to give an answer <b>nobody else</b> gives.</li><li>Every answer only one person gave scores 1 point.</li><li>Whoever gave the single most common answer is a copycat and loses 1 point.</li><li>Answers have to really fit the prompt. The host can tap <b>Doesn't count</b> to strike one before scoring. Talk it over as a table!</li><li>There's no turkey in this mode. First to the target wins.</li></ul>
 <h3>6. Winning</h3>
 <ul><li>The first person to reach the target score who isn't holding the turkey wins. The host can also end the game anytime, and the top score without the turkey wins.</li></ul>
 <div class="tip"><b>Have a TV?</b> Tap "Show it on a TV or laptop" in the lobby to show the prompt, answers and scores big for the room.</div>
@@ -456,6 +477,9 @@ $("lTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on 
 // ---------- host controls
 $("goal").querySelectorAll("button").forEach(b=>b.onclick=()=>{ goal=+b.dataset.g; $("goal").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); });
 $("lStart").onclick=()=>api({action:"start",target:goal});
+$("modes").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{ $("modes").querySelectorAll(".mode").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"mode",mode:b.dataset.m}); });
+const isOdd=()=>V&&V.room.mode==="odd";
+const MODE_LINE={herd:"Gobble Minds: match the table",odd:"Odd Bird: be the only one"};
 $("aSwap").onclick=()=>{ const open=$("swapBox").classList.toggle("hidden")===false; $("aSwap").textContent=open?"Close":"Swap prompt"; if(open) $("swapIn").focus(); };
 const doSwap=p=>{ $("swapBox").classList.add("hidden"); $("aSwap").textContent="Swap prompt"; $("swapIn").value=""; api({action:"swap",prompt:p}); };
 $("swapCustom").onclick=()=>{ const p=$("swapIn").value.trim(); if(!p){ $("swapIn").focus(); return; } doSwap(p); };
@@ -497,11 +521,16 @@ function paintLobby(){
   $("lCount").textContent=n===1?"1 player so far":`${n} players so far`;
   playerList($("lList"),false);
   $("lHost").classList.toggle("hidden",!isHost()); $("lWait").classList.toggle("hidden",isHost());
+  if(isHost()) $("modes").querySelectorAll(".mode").forEach(x=>x.classList.toggle("sel",x.dataset.m===(V.room.mode||"herd")));
+  else $("lWait").innerHTML=`<span class="dotty">Waiting for the host to start</span><br><span style="font-style:normal;font-size:15px">${esc(MODE_LINE[V.room.mode||"herd"])}</span>`;
   if(isHost()){ $("lStart").disabled=n<3; $("lHint").textContent=n<3?`Need at least 3 players (${3-n} more).`:"Start once everyone's on the list."; }
 }
 function paintAnswer(){
   const r=V.room;
   $("aRound").textContent=`Round ${r.round}`; $("aCode").textContent=`Code ${r.code} · playing to ${r.target}`;
+  $("aK").textContent=isOdd()?"Odd Bird · be the only one":"Gobble Minds · match the table";
+  $("ansLbl").textContent=isOdd()?"What will nobody else say?":"What will most people say?";
+  $("oddHint").classList.toggle("hidden",!isOdd());
   $("aPrompt").textContent=r.prompt;
   $("aSwap").classList.toggle("hidden",!isHost()); if(!isHost()) $("swapBox").classList.add("hidden");
   const done=!!V.myAnswer && !L.editing;
@@ -523,25 +552,42 @@ function paintResults(){
   const r=V.room, host=isHost(), reveal=r.phase==="reveal", res=V.result||{};
   $("rRound").textContent=`Round ${r.round}`; $("rPrompt").textContent=r.prompt;
   const groups=(V.groups||[]).slice().sort((a,b)=>b.ids.length-a.ids.length);
+  const odd=isOdd();
   if(!reveal){
     $("rBanner").innerHTML="";
-    $("rHelp").textContent = host ? "Tap answers that mean the same thing, then merge them. Score when it looks right." : "The host is matching up answers that mean the same thing. Speak up if you see a match!";
+    $("rHelp").textContent = host ? (odd?"Tap answers that mean the same thing to merge them. Strike anything that doesn't really fit. Then score.":"Tap answers that mean the same thing, then merge them. Score when it looks right.") : (odd?"The host is matching answers and striking ones that don't fit. Speak up!":"The host is matching up answers that mean the same thing. Speak up if you see a match!");
     sel=new Set([...sel].filter(k=>groups.some(g=>g.key===k)));
   } else {
     $("rHelp").textContent="";
+    if(odd){
+      const u=(res.uniques||[]).map(nameOf), c=(res.copycats||[]).map(nameOf), cg=groups.find(g=>g.key===res.copyKey);
+      $("rBanner").innerHTML = (u.length
+        ? `<div class="banner"><b>${u.length} unique answer${u.length===1?"":"s"}</b><span>+1 point to ${esc(u.join(", "))}</span></div>`
+        : `<div class="banner none"><b>No unique answers</b><span>Great minds think alike. Nobody scores.</span></div>`)
+        + (cg?`<div class="turkeyNote">${document.querySelector(".hero svg").outerHTML}<div><b>Copycats: ${esc(c.join(", "))}</b><span>The most common answer was "${esc(cg.label)}". −1 point each.</span></div></div>`:"");
+    } else {
     const win=groups.find(g=>g.key===res.topKey);
     $("rBanner").innerHTML = win
       ? `<div class="banner"><b>${esc(win.label)}</b><span>${win.ids.length} matched · +1 point to ${esc(win.ids.map(nameOf).join(", "))}</span></div>`
       : `<div class="banner none"><b>${res.allDifferent?"Everyone said something different":"It's a tie for the top"}</b><span>Nobody scores this round.</span></div>`;
     if(res.turkeyMoved) $("rBanner").innerHTML+=`<div class="turkeyNote">${document.querySelector(".hero svg").outerHTML}<div><b>${esc(nameOf(res.turkey))} gets the turkey</b><span>Only one with that answer. They can't win while holding it.</span></div></div>`;
+    }
   }
-  const lone=groups.filter(g=>g.ids.length===1).length===1;
+  const valid=groups.filter(g=>!g.vetoed);
+  const lone=!odd&&valid.filter(g=>g.ids.length===1).length===1;
+  const uk=new Set(res.uniqueKeys||[]);
   $("rGroups").innerHTML=groups.map(g=>{
-    const cls=[reveal&&g.key===res.topKey?"win":"", reveal&&lone&&g.ids.length===1?"lone":"", !reveal&&sel.has(g.key)?"sel":""].join(" ");
-    const tag=!reveal&&host?"button":"div";
-    return `<${tag} class="grp ${cls}" ${tag==="button"?`type="button" data-g="${esc(g.key)}" aria-pressed="${sel.has(g.key)}"`:""}><div class="top"><span class="lab">${esc(g.label)}</span><span class="n">${g.ids.length}</span></div>${g.parts&&g.parts.length>1?`<div class="parts">Merged: ${esc(g.parts.join(" · "))}</div>`:""}<div class="gwho">${g.ids.map(id=>`<span>${esc(nameOf(id))}</span>`).join("")}</div>${reveal&&lone&&g.ids.length===1?`<div class="tk">Lone answer</div>`:""}</${tag}>`;
+    const isLone=reveal&&lone&&!g.vetoed&&g.ids.length===1;
+    const cls=[g.vetoed?"vetoed":"", reveal&&(odd?uk.has(g.key):g.key===res.topKey)?"win":"", reveal&&odd&&g.key===res.copyKey?"copy":"", isLone?"lone":"", !reveal&&sel.has(g.key)?"sel":""].join(" ");
+    const inner=`<div class="top"><span class="lab">${esc(g.label)}</span><span class="n">${g.ids.length}</span></div>${g.parts&&g.parts.length>1?`<div class="parts">Merged: ${esc(g.parts.join(" · "))}</div>`:""}<div class="gwho">${g.ids.map(id=>`<span>${esc(nameOf(id))}</span>`).join("")}</div>`;
+    const tags=(g.vetoed?`<div class="vtag">Doesn't count</div>`:"")+(isLone?`<div class="tk">Lone answer</div>`:"")+(reveal&&odd&&uk.has(g.key)?`<div class="utag">Unique · +1</div>`:"")+(reveal&&odd&&g.key===res.copyKey?`<div class="ctag">Copycats · −1</div>`:"");
+    if(!reveal&&host) return `<div class="grp ${cls}"><button class="gsel" type="button" data-g="${esc(g.key)}" aria-pressed="${sel.has(g.key)}">${inner}</button>${tags}<button class="veto" type="button" data-v="${esc(g.key)}">${g.vetoed?"Count it again":"Doesn't count"}</button></div>`;
+    return `<div class="grp ${cls}">${inner}${tags}</div>`;
   }).join("");
-  if(!reveal&&host) $("rGroups").querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ const k=b.dataset.g; sel.has(k)?sel.delete(k):sel.add(k); paintResults(); });
+  if(!reveal&&host){
+    $("rGroups").querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ const k=b.dataset.g; sel.has(k)?sel.delete(k):sel.add(k); paintResults(); });
+    $("rGroups").querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>api({action:"veto",key:b.dataset.v}));
+  }
   $("rMerge").disabled=sel.size<2; $("rMerge").textContent=sel.size>=2?`Merge ${sel.size} answers`:"Tap 2+ answers to merge";
   $("rHostReview").classList.toggle("hidden",!(host&&!reveal));
   $("rHostReveal").classList.toggle("hidden",!(host&&reveal));
@@ -571,7 +617,7 @@ function apply(j){
   else if(r.phase==="answer"){ if(changed) show("vAnswer"); paintAnswer(); }
   else if(r.phase==="review"||r.phase==="reveal"){
     if(changed) show("vResults"); paintResults();
-    if(changed&&r.phase==="reveal"&&j.result&&j.result.topKey) setTimeout(()=>window.leafBurst&&leafBurst($("rBanner")),80);
+    if(changed&&r.phase==="reveal"&&j.result&&(j.result.topKey||(j.result.uniques||[]).length)) setTimeout(()=>window.leafBurst&&leafBurst($("rBanner")),80);
   }
   else { if(changed){ show("vFinal"); setTimeout(()=>window.leafBurst&&leafBurst($("fWinner"),30),200); } paintFinal(); }
   L.phase=r.phase; L.round=r.round;
