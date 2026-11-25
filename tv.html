@@ -130,7 +130,7 @@ body{background:radial-gradient(120% 90% at 50% 0%,var(--pump) 0%,var(--pump-dee
   <main class="entry" id="vEntry">
     <form class="sheet" id="entryForm" autocomplete="off">
       <h1>TV mode</h1>
-      <p>Type the game's 4-letter code. This screen shows the slips and votes for the whole room. It doesn't count as a player.</p>
+      <p>Type the game's 4-letter code. This screen shows the answers and votes for the whole room. It doesn't count as a player.</p>
       <input id="codeIn" maxlength="4" placeholder="CODE" autocapitalize="characters" spellcheck="false" aria-label="Game code">
       <button type="submit">Show the game</button>
       <div class="err" id="entryErr"></div>
@@ -154,7 +154,7 @@ body{background:radial-gradient(120% 90% at 50% 0%,var(--pump) 0%,var(--pump-dee
 
   <!-- reveal -->
   <main class="reveal hidden" id="vReveal">
-    <div class="prog"><div class="n" id="rN">Slip 1 of 5</div><div class="dots" id="rDots"></div></div>
+    <div class="prog"><div class="n" id="rN">Answer 1 of 5</div><div class="dots" id="rDots"></div></div>
     <div class="slipwrap"><div class="slip" id="slip"><div class="ptag hidden" id="rPrompt"></div><div class="tag">Someone here is thankful for…</div><div class="hand" id="rText"></div></div></div>
     <div class="bottom" id="rVoting">
       <div class="votebar"><div class="q">Who wrote it? Vote on your phone</div><div class="chips" id="rChips"></div></div>
@@ -227,14 +227,14 @@ function render(j){
     if(L.phase!=="collect"){ show("vCollect"); $("bigCode").textContent=r.code; qr(); L.written={}; }
     $("cPrompt").textContent=r.prompt||DEFAULT_PROMPT;
     const n=P.filter(p=>p.wrote).length;
-    $("cHead").textContent = P.length ? `${n} of ${P.length} slips in` : "Waiting for players to join";
+    $("cHead").textContent = P.length ? `${n} of ${P.length} answers in` : "Waiting for players to join";
     $("cChips").innerHTML=P.map(p=>`<span class="chip ${p.wrote?"on":""} ${p.wrote&&!L.written[p.id]?"pop":""}"><i>${p.wrote?"✓":"✎"}</i>${esc(p.name)}</span>`).join("");
     P.forEach(p=>{ if(p.wrote) L.written[p.id]=1; });
   }
   else if(r.phase==="reveal"){
     show("vReveal");
     const sl=j.slip;
-    $("rN").textContent=`Slip ${r.pos+1} of ${r.total}`;
+    $("rN").textContent=`Answer ${r.pos+1} of ${r.total}`;
     $("rDots").innerHTML=Array.from({length:r.total},(_,i)=>`<i class="${i<r.pos?"done":i===r.pos?"cur":""}"></i>`).join("");
     $("rPrompt").textContent=r.prompt?`Prompt: ${r.prompt}`:""; $("rPrompt").classList.toggle("hidden",!r.prompt);
     if(L.phase!=="reveal"||L.pos!==r.pos){ $("rText").textContent=sl.text; const el=$("slip"); el.classList.remove("pull","small"); void el.offsetWidth; el.classList.add("pull"); }

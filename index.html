@@ -199,7 +199,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
       <ul>
         <li>One person taps Host and reads out the code. Everyone else joins with it.</li>
         <li>Each person secretly writes one thing they're thankful for.</li>
-        <li>The host reveals the slips one at a time. Everyone votes on who wrote it, then the host shows the answer.</li>
+        <li>The host reveals the answers one at a time. Everyone votes on who wrote it, then the host shows who it was.</li>
         <li>You get a point for every right guess.</li>
       </ul>
     </div>
@@ -216,11 +216,11 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
       <div id="writeForm">
         <div class="field"><label class="lbl" for="oTx">I'm thankful for…</label><textarea id="oTx" maxlength="200" placeholder="something only you would say"></textarea></div>
         <div class="err" id="wErr"></div>
-        <button class="btn btn-go" id="oSend" type="button">Add my slip</button>
+        <button class="btn btn-go" id="oSend" type="button">Add my answer</button>
         <p class="hint">Be specific and keep it secret. Don't put your name in it.</p>
       </div>
       <div id="writeDone" class="hidden">
-        <div class="okline"><i>✓</i>Your slip is in</div>
+        <div class="okline"><i>✓</i>Your answer is in</div>
         <div class="mine" id="myText"></div>
         <button class="btn btn-quiet" id="oEdit" type="button">Change it</button>
       </div>
@@ -239,7 +239,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 
   <!-- ONLINE REVEAL -->
   <section id="vOReveal" class="hidden">
-    <div class="bar"><div><div class="count" id="oProg">Slip 1</div><div class="meta" id="oProgOf">of 5</div></div><button class="btn btn-chip" id="oLeave2" type="button">Leave</button></div>
+    <div class="bar"><div><div class="count" id="oProg">Answer 1</div><div class="meta" id="oProgOf">of 5</div></div><button class="btn btn-chip" id="oLeave2" type="button">Leave</button></div>
     <div class="dots" id="oDots"></div>
     <div class="slip" id="oSlip"><div class="ptag hidden" id="oPTag"></div><div class="tag">Someone here is thankful for…</div><div class="hand" id="oSlipText"></div></div>
     <div id="oVoteBox">
@@ -252,14 +252,14 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
     <div class="bd hidden" id="oBD"></div>
     <div id="oHostCtl" class="hidden stack">
       <button class="btn btn-hot" id="oShow" type="button">Reveal who wrote it</button>
-      <button class="btn btn-go hidden" id="oNext" type="button">Next slip</button>
+      <button class="btn btn-go hidden" id="oNext" type="button">Next answer</button>
     </div>
     <p class="wait hidden" id="oWaitR"></p>
   </section>
 
   <!-- ONLINE DONE -->
   <section id="vODone" class="hidden">
-    <p class="tagline" style="margin-top:0">That's every slip! Here's the scoreboard.</p>
+    <p class="tagline" style="margin-top:0">That's every answer! Here's the scoreboard.</p>
     <div class="sheet" style="margin-bottom:18px"><ul class="plist" id="dScores"></ul></div>
     <p class="tagline" style="margin:0 0 10px">What this table is thankful for</p>
     <div class="sheet" style="margin-bottom:20px"><ul class="list" id="dAll"></ul></div>
@@ -271,23 +271,23 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
   <!-- COLLECT -->
   <section id="vCollect" class="hidden">
     <p class="tagline">Pass this phone around the table. Everyone secretly adds one thing they're thankful for.</p>
-    <div class="steps"><div class="on"><b>1</b>Add slips</div><div><b>2</b>Reveal</div></div>
+    <div class="steps"><div class="on"><b>1</b>Add answers</div><div><b>2</b>Reveal</div></div>
     <form class="sheet" id="f" autocomplete="off">
       <div class="field"><label class="lbl" for="nm">Your name</label><input id="nm" maxlength="40" placeholder="First name"></div>
       <div class="field"><label class="lbl" for="tx">I'm thankful for…</label><textarea id="tx" maxlength="200" placeholder="something only you would say"></textarea></div>
       <div class="err" id="err"></div>
-      <button class="btn btn-go" type="submit" id="submitBtn">Fold it up and add it</button>
+      <button class="btn btn-go" type="submit" id="submitBtn">Add my answer</button>
       <p class="hint">Be specific. "The quiet 6am coffee before the kids wake up" is way more fun to guess than "family."</p>
     </form>
 
     <div class="sheet inbox">
       <div class="n" id="n">0</div>
-      <div><b id="inLbl">No slips yet</b><div class="chips" id="chips"></div></div>
+      <div><b id="inLbl">No answers yet</b><div class="chips" id="chips"></div></div>
     </div>
 
     <div class="stack">
       <button class="btn btn-hot" id="toReveal" type="button">Everyone's in, start the reveal</button>
-      <button class="btn btn-quiet" id="manage" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Fix or remove a slip</button>
+      <button class="btn btn-quiet" id="manage" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Fix or remove an answer</button>
     </div>
 
     <button class="btn btn-quiet offLink" id="toOnline" type="button">Everyone has a phone? Play online</button>
@@ -295,7 +295,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
       <h2>How to play</h2>
       <ul>
         <li>Each person types their name and what they're thankful for, then passes the phone on.</li>
-        <li>When everyone's in, the slips come out one at a time in random order.</li>
+        <li>When everyone's in, the answers come out one at a time in random order.</li>
         <li>Everyone guesses out loud who wrote it, then tap to reveal.</li>
       </ul>
     </div>
@@ -306,7 +306,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
     <div class="sheet cover">
       <div class="big" aria-hidden="true">🍂</div>
       <h2>Thanks, <span id="passName"></span>!</h2>
-      <p>Your slip is folded and hidden. Pass the phone to the next person.</p>
+      <p>Your answer is hidden. Pass the phone to the next person.</p>
       <div class="stack">
         <button class="btn btn-go" id="next" type="button">I'm the next person</button>
         <button class="btn btn-quiet" id="oops" type="button">Wait, let me fix mine</button>
@@ -317,19 +317,19 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 
   <!-- REVEAL -->
   <section id="vReveal" class="hidden">
-    <div class="steps"><div><b>1</b>Add slips</div><div class="on"><b>2</b>Reveal</div></div>
-    <div class="bar"><div><div class="count" id="prog">Slip 1</div><div class="meta" id="progOf">of 8</div></div><button class="btn btn-chip" id="backAdd" type="button">Add more</button></div>
+    <div class="steps"><div><b>1</b>Add answers</div><div class="on"><b>2</b>Reveal</div></div>
+    <div class="bar"><div><div class="count" id="prog">Answer 1</div><div class="meta" id="progOf">of 8</div></div><button class="btn btn-chip" id="backAdd" type="button">Add more</button></div>
     <div class="dots" id="dots"></div>
     <div class="slip" id="slip"><div class="tag">Someone here is thankful for…</div><div class="hand" id="slipText"></div></div>
     <p class="guess" id="guess">Who wrote it? Everyone guess out loud!</p>
     <div class="who hidden" id="who"><span>Written by</span><b id="whoName"></b></div>
     <button class="btn btn-hot" id="reveal" type="button">Reveal who wrote it</button>
-    <button class="btn btn-go hidden" id="pull" type="button">Next slip</button>
+    <button class="btn btn-go hidden" id="pull" type="button">Next answer</button>
   </section>
 
   <!-- DONE -->
   <section id="vDone" class="hidden">
-    <p class="tagline">That's the whole basket. Here's what this table is thankful for tonight.</p>
+    <p class="tagline">That's every answer. Here's what this table is thankful for tonight.</p>
     <div class="sheet" style="margin-bottom:20px"><ul class="list" id="all"></ul></div>
     <div class="stack">
       <button class="btn btn-go" id="again" type="button">Reveal them again</button>
@@ -339,11 +339,11 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
 
   <!-- MANAGE -->
   <section id="vManage" class="hidden">
-    <p class="tagline">Names only, so nothing gets spoiled. Tap a name to let that person fix their slip.</p>
+    <p class="tagline">Names only, so nothing gets spoiled. Tap a name to let that person fix their answer.</p>
     <div class="sheet" style="margin-bottom:20px"><ul class="list" id="mlist"></ul></div>
     <div class="stack">
       <button class="btn btn-go" id="mBack" type="button">Done</button>
-      <button class="btn btn-quiet" id="clear" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Clear every slip</button>
+      <button class="btn btn-quiet" id="clear" type="button" style="color:var(--paper);border-color:rgba(255,253,246,.5)">Clear every answer</button>
     </div>
   </section>
 </div>
@@ -372,18 +372,18 @@ $("scrim").onclick=e=>{if(e.target===$("scrim"))$("scrim").classList.remove("ope
 
 function paintInbox(){
   const n=S.slips.length;$("n").textContent=n;
-  $("inLbl").textContent=n===0?"No slips yet":n===1?"1 slip in the basket":`${n} slips in the basket`;
+  $("inLbl").textContent=n===0?"No answers yet":n===1?"1 answer in":`${n} answers in`;
   $("chips").innerHTML=n?S.slips.map(s=>`<span>${esc(s.name)}</span>`).join(""):`<span class="none">Names show up here as people add theirs.</span>`;
   $("toReveal").disabled=n<2;
 }
 function toCollect(){
   S.editing=null;$("nm").value="";$("tx").value="";$("err").textContent="";
-  $("submitBtn").textContent="Fold it up and add it";
+  $("submitBtn").textContent="Add my answer";
   paintInbox();show("vCollect");save();
 }
 function editSlip(s){
   S.editing=s.id;$("nm").value=s.name;$("tx").value=s.text;$("err").textContent="";
-  $("submitBtn").textContent="Save my slip";paintInbox();show("vCollect");$("tx").focus();
+  $("submitBtn").textContent="Save my answer";paintInbox();show("vCollect");$("tx").focus();
 }
 
 $("f").addEventListener("submit",e=>{
@@ -397,7 +397,7 @@ $("f").addEventListener("submit",e=>{
     else{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);S.slips.push({id,name,text});S.lastId=id;}
     S.order=[];S.pos=0;save();$("passName").textContent=name;show("vPass");
   };
-  if(dup)dialog(`There's already a slip from ${dup.name}`,"Two people with the same name? Add a last initial so the reveal makes sense.",[{label:"Add it anyway",go:commit},{label:"Let me change my name",cls:"btn-quiet",go:()=>$("nm").focus()}]);
+  if(dup)dialog(`There's already an answer from ${dup.name}`,"Two people with the same name? Add a last initial so the reveal makes sense.",[{label:"Add it anyway",go:commit},{label:"Let me change my name",cls:"btn-quiet",go:()=>$("nm").focus()}]);
   else commit();
 });
 
@@ -408,15 +408,15 @@ $("allIn").onclick=()=>{paintInbox();askReveal();};
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function startReveal(){S.order=shuffle(S.slips.map(s=>s.id));S.pos=0;S.shown=false;save();paintSlip();show("vReveal");}
 function askReveal(){
-  if(S.slips.length<2){dialog("Need at least two slips","Get one more person to add theirs, then start the reveal.",[{label:"Okay",go:toCollect}]);return;}
-  dialog("Start the reveal?",`${S.slips.length} slips are in. Once it starts, the slips get shuffled.`,[{label:"Start the reveal",cls:"btn-hot",go:startReveal},{label:"Not yet, someone's missing",cls:"btn-quiet",go:toCollect}]);
+  if(S.slips.length<2){dialog("Need at least two answers","Get one more person to add theirs, then start the reveal.",[{label:"Okay",go:toCollect}]);return;}
+  dialog("Start the reveal?",`${S.slips.length} answers are in. Once it starts, the answers get shuffled.`,[{label:"Start the reveal",cls:"btn-hot",go:startReveal},{label:"Not yet, someone's missing",cls:"btn-quiet",go:toCollect}]);
 }
 $("toReveal").onclick=askReveal;
 
 function paintSlip(){
   const s=S.slips.find(x=>x.id===S.order[S.pos]);
   if(!s){finish();return;}
-  $("prog").textContent=`Slip ${S.pos+1}`;$("progOf").textContent=`of ${S.order.length}`;
+  $("prog").textContent=`Answer ${S.pos+1}`;$("progOf").textContent=`of ${S.order.length}`;
   $("dots").innerHTML=S.order.map((_,i)=>`<i class="${i<S.pos?"done":i===S.pos?"cur":""}"></i>`).join("");
   $("slipText").textContent=s.text;
   const el=$("slip");el.classList.remove("pull");void el.offsetWidth;el.classList.add("pull");
@@ -426,11 +426,11 @@ function paintWho(s){
   $("whoName").textContent=s.name;
   $("who").classList.toggle("hidden",!S.shown);$("guess").classList.toggle("hidden",S.shown);
   $("reveal").classList.toggle("hidden",S.shown);$("pull").classList.toggle("hidden",!S.shown);
-  $("pull").textContent=S.pos+1<S.order.length?"Next slip":"See all the slips";
+  $("pull").textContent=S.pos+1<S.order.length?"Next answer":"See all the answers";
 }
 $("reveal").onclick=()=>{S.shown=true;save();paintWho(S.slips.find(x=>x.id===S.order[S.pos]));};
 $("pull").onclick=()=>{S.pos++;S.shown=false;save();if(S.pos>=S.order.length)finish();else paintSlip();};
-$("backAdd").onclick=()=>dialog("Add more slips?","You'll go back to adding. Starting the reveal again reshuffles everything.",[{label:"Yes, add more",go:()=>{S.order=[];S.pos=0;save();toCollect();}},{label:"Keep revealing",cls:"btn-quiet"}]);
+$("backAdd").onclick=()=>dialog("Add more answers?","You'll go back to adding. Starting the reveal again reshuffles everything.",[{label:"Yes, add more",go:()=>{S.order=[];S.pos=0;save();toCollect();}},{label:"Keep revealing",cls:"btn-quiet"}]);
 
 function finish(){
   S.order=[];S.pos=0;save();
@@ -440,13 +440,13 @@ function finish(){
 $("again").onclick=startReveal;
 
 function paintManage(){
-  $("mlist").innerHTML=S.slips.length?S.slips.map(s=>`<li><button class="btn btn-chip" data-e="${s.id}" type="button">${esc(s.name)}</button><button class="rm" data-r="${s.id}" type="button">Remove</button></li>`).join(""):`<li><span style="color:var(--muted)">No slips yet.</span></li>`;
-  $("mlist").querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.e);dialog(`Hand the phone to ${s.name}`,"Their slip will show on screen so they can fix it. No peeking!",[{label:`I'm ${s.name}, show my slip`,go:()=>editSlip(s)},{label:"Cancel",cls:"btn-quiet"}]);});
-  $("mlist").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.r);dialog("Remove this slip?",`${s.name}'s slip will be taken out of the basket.`,[{label:"Remove it",cls:"btn-hot",go:()=>{S.slips=S.slips.filter(x=>x.id!==s.id);S.order=[];save();paintManage();}},{label:"Keep it",cls:"btn-quiet"}]);});
+  $("mlist").innerHTML=S.slips.length?S.slips.map(s=>`<li><button class="btn btn-chip" data-e="${s.id}" type="button">${esc(s.name)}</button><button class="rm" data-r="${s.id}" type="button">Remove</button></li>`).join(""):`<li><span style="color:var(--muted)">No answers yet.</span></li>`;
+  $("mlist").querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.e);dialog(`Hand the phone to ${s.name}`,"Their answer will show on screen so they can fix it. No peeking!",[{label:`I'm ${s.name}, show my answer`,go:()=>editSlip(s)},{label:"Cancel",cls:"btn-quiet"}]);});
+  $("mlist").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const s=S.slips.find(x=>x.id===b.dataset.r);dialog("Remove this answer?",`${s.name}'s answer will be removed.`,[{label:"Remove it",cls:"btn-hot",go:()=>{S.slips=S.slips.filter(x=>x.id!==s.id);S.order=[];save();paintManage();}},{label:"Keep it",cls:"btn-quiet"}]);});
 }
 $("manage").onclick=()=>{paintManage();show("vManage");};
 $("mBack").onclick=toCollect;
-const wipe=()=>dialog("Start a new game?","This empties the basket. Every slip will be deleted.",[{label:"Yes, clear everything",cls:"btn-hot",go:()=>{S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};save();toCollect();}},{label:"Cancel",cls:"btn-quiet"}]);
+const wipe=()=>dialog("Start a new game?","Every answer will be deleted.",[{label:"Yes, clear everything",cls:"btn-hot",go:()=>{S={slips:[],order:[],pos:0,lastId:null,editing:null,shown:false};save();toCollect();}},{label:"Cancel",cls:"btn-quiet"}]);
 $("clear").onclick=wipe;$("fresh").onclick=wipe;
 
 // ---------- online play (Vercel API + Upstash)
@@ -515,12 +515,12 @@ $("oSend").onclick=async()=>{
 $("oEdit").onclick=()=>{ L.editing=true; $("oTx").value=V?V.mySlip:""; paintRoom(); $("oTx").focus(); };
 $("rStart").onclick=()=>{
   const n=V.players.filter(p=>p.wrote).length, m=V.players.length-n;
-  dialog("Start the reveal?", m ? `${m} ${m===1?"person hasn't":"people haven't"} written a slip yet. They can still vote, but their slip won't be in this round.` : `All ${n} slips are in.`,
+  dialog("Start the reveal?", m ? `${m} ${m===1?"person hasn't":"people haven't"} written an answer yet. They can still vote, but their answer won't be in this round.` : `All ${n} answers are in.`,
     [{label:"Start the reveal",cls:"btn-hot",go:()=>api({action:"start"})},{label:"Wait",cls:"btn-quiet"}]);
 };
 $("oShow").onclick=()=>api({action:"show"});
 $("oNext").onclick=()=>api({action:"next"});
-$("dAgain").onclick=()=>dialog("Play another round?","Everyone writes a new slip. Scores start over.",[{label:"New round",go:()=>api({action:"reset"})},{label:"Cancel",cls:"btn-quiet"}]);
+$("dAgain").onclick=()=>dialog("Play another round?","Everyone writes a new answer. Scores start over.",[{label:"New round",go:()=>api({action:"reset"})},{label:"Cancel",cls:"btn-quiet"}]);
 
 const PROMPTS=["Anything you're thankful for","A small, everyday thing","Something from this year","Someone who isn't here tonight","Someone at this table","A food (be specific!)","Something funny to be thankful for","A moment you'll never forget","Something about this group","A prayer God answered","Something you took for granted until you didn't","A place that feels like home"];
 function tvUrl(){ return `${location.origin}/tv.html?code=${V.room.code}`; }
@@ -534,7 +534,7 @@ function paintPicker(){
     api({action:"prompt",prompt:t===PROMPTS[0]?"":t});
   });
 }
-$("rTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on a TV, laptop or tablet. It shows the code, the slips and the votes in big type. It doesn't count as a player.",[
+$("rTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on a TV, laptop or tablet. It shows the code, the answers and the votes in big type. It doesn't count as a player.",[
   {label:"Copy the TV link",go:async()=>{ try{ await navigator.clipboard.writeText(tvUrl()); }catch(e){} dialog("TV link",tvUrl(),[{label:"Done"}]); }},
   {label:"Open TV mode on this device",cls:"btn-quiet",go:()=>{ location.href=tvUrl(); }},
   {label:"Cancel",cls:"btn-quiet"}]);
@@ -549,18 +549,18 @@ function paintRoom(){
   const wrote=!!V.mySlip && !L.editing;
   $("writeForm").classList.toggle("hidden",wrote); $("writeDone").classList.toggle("hidden",!wrote);
   if(wrote) $("myText").textContent=V.mySlip;
-  $("oSend").textContent = V.mySlip ? "Save my slip" : "Add my slip";
+  $("oSend").textContent = V.mySlip ? "Save my answer" : "Add my answer";
   const n=V.players.filter(p=>p.wrote).length;
-  $("rCount").textContent=`${n} of ${V.players.length} slips in`;
+  $("rCount").textContent=`${n} of ${V.players.length} answers in`;
   $("rList").innerHTML=V.players.map(p=>`<li><span class="st ${p.wrote?"ok":""}">${p.wrote?"✓":"✎"}</span><span class="nm">${esc(p.name)}</span>${p.id===r.hostId?'<span class="badge">Host</span>':""}${p.id===O.pid?'<span class="me">You</span>':""}${host&&p.id!==r.hostId?`<button class="rm" type="button" data-k="${p.id}">Remove</button>`:""}</li>`).join("");
   $("rList").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const who=nameOf(b.dataset.k); dialog(`Remove ${who}?`,"Use this if someone joined twice or left.",[{label:"Remove",cls:"btn-hot",go:()=>api({action:"kick",who:b.dataset.k})},{label:"Cancel",cls:"btn-quiet"}]); });
   $("rHost").classList.toggle("hidden",!host); $("rWait").classList.toggle("hidden",host);
-  if(host){ $("rStart").disabled=n<2; $("rHint").textContent = n<2 ? "Need at least two slips to start." : n<V.players.length ? "Waiting on a few people. Start whenever you're ready." : "Everyone's in!"; }
+  if(host){ $("rStart").disabled=n<2; $("rHint").textContent = n<2 ? "Need at least two answers to start." : n<V.players.length ? "Waiting on a few people. Start whenever you're ready." : "Everyone's in!"; }
 }
 
 function paintReveal(){
   const r=V.room, host=r.hostId===O.pid, sl=V.slip;
-  $("oProg").textContent=`Slip ${r.pos+1}`; $("oProgOf").textContent=`of ${r.total}`;
+  $("oProg").textContent=`Answer ${r.pos+1}`; $("oProgOf").textContent=`of ${r.total}`;
   $("oDots").innerHTML=Array.from({length:r.total},(_,i)=>`<i class="${i<r.pos?"done":i===r.pos?"cur":""}"></i>`).join("");
   $("oPTag").textContent=r.prompt?`Prompt: ${r.prompt}`:""; $("oPTag").classList.toggle("hidden",!r.prompt);
   if(L.pos!==r.pos||L.phase!=="reveal"){ $("oSlipText").textContent=sl.text; const el=$("oSlip"); el.classList.remove("pull"); void el.offsetWidth; el.classList.add("pull"); }
@@ -585,8 +585,8 @@ function paintReveal(){
     $("oBD").classList.toggle("hidden",!(sl.breakdown||[]).length);
   }
   $("oHostCtl").classList.toggle("hidden",!host); $("oWaitR").classList.toggle("hidden",host);
-  if(host){ $("oShow").classList.toggle("hidden",r.shown); $("oNext").classList.toggle("hidden",!r.shown); $("oNext").textContent = r.pos+1<r.total ? "Next slip" : "See the scoreboard"; }
-  else $("oWaitR").innerHTML = `<span class="dotty">${r.shown?"Waiting for the next slip":"Waiting for the host to reveal"}</span>`;
+  if(host){ $("oShow").classList.toggle("hidden",r.shown); $("oNext").classList.toggle("hidden",!r.shown); $("oNext").textContent = r.pos+1<r.total ? "Next answer" : "See the scoreboard"; }
+  else $("oWaitR").innerHTML = `<span class="dotty">${r.shown?"Waiting for the next answer":"Waiting for the host to reveal"}</span>`;
 }
 
 function paintDone(){
@@ -622,15 +622,15 @@ else show("vStart");
 <h3>1. Join and write</h3>
 <ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>Write one specific thing you're thankful for. Keep it secret, and don't put your name in it.</li><li>Specific is more fun: "the 6am coffee before the kids wake up" beats "family."</li><li>The host can pick a prompt for the round, like "a small, everyday thing" or "something from this year." Write to the prompt.</li></ul>
 <h3>2. Read it out loud</h3>
-<ul><li>The host starts the reveal. The same slip shows on every phone.</li><li>Someone reads it out loud so the whole table is on the same one.</li></ul>
+<ul><li>The host starts the reveal. The same answer shows on every phone.</li><li>Someone reads it out loud so the whole table is on the same one.</li></ul>
 <h3>3. Talk, then vote</h3>
 <ul><li>Talking is encouraged. Make your case ("that is SO Clay"), ask questions, and bluff if it's yours.</li><li>Everyone taps their guess on their phone. You can change it until the host reveals.</li><li>The writer doesn't vote. Keep a straight face!</li></ul>
 <h3>4. Reveal and share</h3>
 <ul><li>The host taps <b>Reveal</b>. Everyone sees who wrote it and who guessed right. Each right guess is 1 point.</li><li>Then the writer gets a moment to share why they're thankful for it. This is the best part, so don't skip it.</li></ul>
 <h3>5. Scoreboard</h3>
-<ul><li>After the last slip, the scoreboard and every slip show up. Most points gets bragging rights.</li><li>The host can start another round with new slips.</li></ul>
-<div class="tip"><b>Have a TV?</b> Open TV mode (link at the bottom of the start screen, or "Show it on a TV" in the host's lobby) to show the slips, votes and scoreboard big for the whole room.</div>
-<div class="tip"><b>Only one phone?</b> Use "Pass it around instead." Each person adds a slip and hands the phone on, then the table guesses out loud.</div><div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div></div></div>
+<ul><li>After the last answer, the scoreboard and every answer show up. Most points gets bragging rights.</li><li>The host can start another round with new answers.</li></ul>
+<div class="tip"><b>Have a TV?</b> Open TV mode (link at the bottom of the start screen, or "Show it on a TV" in the host's lobby) to show the answers, votes and scoreboard big for the whole room.</div>
+<div class="tip"><b>Only one phone?</b> Use "Pass it around instead." Each person adds an answer and hands the phone on, then the table guesses out loud.</div><div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div></div></div>
 <script>
 {const sc=document.getElementById("rulesScrim");
 document.getElementById("rulesFab").onclick=()=>{sc.classList.add("open");document.getElementById("rulesClose").focus();};

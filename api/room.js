@@ -1,6 +1,6 @@
 // Who's Thankful For That? room sync. Upstash Redis via REST (plain fetch); rooms expire after a day.
 // Env: KV_REST_API_URL + KV_REST_API_TOKEN (Vercel Storage) or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN.
-// Slip text stays hidden until its turn in the reveal, and authors stay hidden until the host reveals them.
+// Answer text stays hidden until its turn in the reveal, and authors stay hidden until the host reveals them.
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const TTL = 60 * 60 * 24;
@@ -44,7 +44,7 @@ function view(raw, me) {
   if (room.phase === "reveal") {
     const author = room.order[room.pos];
     const cur = Object.entries(votes).filter(([k]) => k.startsWith(room.pos + ":")).map(([k, v]) => ({ voter: k.split(":")[1], guess: v }));
-    out.slip = { text: slips[author] || "(this slip was removed)", mine: author === me };
+    out.slip = { text: slips[author] || "(this answer was removed)", mine: author === me };
     out.myVote = (cur.find(v => v.voter === me) || {}).guess || "";
     out.voted = cur.map(v => v.voter);
     if (room.shown) {
@@ -124,15 +124,15 @@ module.exports = async (req, res) => {
       if (!isHost) await redis([["HDEL", k.players, pid], ["HDEL", k.slips, pid]]);
     } else if (action === "slip") {
       if (!inRoom) return send(403, { error: "Join the game first." });
-      if (room.phase !== "collect") return send(400, { error: "The reveal already started. You can add a slip next game." });
+      if (room.phase !== "collect") return send(400, { error: "The reveal already started. You can add an answer next game." });
       const text = String(body.text || "").replace(/\s+/g, " ").trim().slice(0, 200);
       if (text.length < 2) return send(400, { error: "Write what you're thankful for." });
       await redis([["HSET", k.slips, pid, text], ...touch]);
     } else if (action === "vote") {
       if (!inRoom) return send(403, { error: "Join the game first." });
-      if (room.phase !== "reveal" || room.shown) return send(400, { error: "Voting is closed for this slip." });
+      if (room.phase !== "reveal" || room.shown) return send(400, { error: "Voting is closed for this answer." });
       const guess = cleanId(body.guess);
-      if (room.order[room.pos] === pid) return send(400, { error: "That's your slip! Sit this vote out." });
+      if (room.order[room.pos] === pid) return send(400, { error: "That's your answer! Sit this vote out." });
       if (!raw.players.some(p => p.id === guess) || guess === pid) return send(400, { error: "Pick someone else." });
       await redis([["HSET", k.votes, room.pos + ":" + pid, guess], ...touch]);
     } else {
@@ -147,7 +147,7 @@ module.exports = async (req, res) => {
         if (who && who !== room.hostId) await redis([["HDEL", k.players, who], ["HDEL", k.slips, who]]);
       } else if (action === "start") {
         const ids = raw.players.map(p => p.id).filter(id => raw.slips[id]);
-        if (ids.length < 2) return send(400, { error: "You need at least two slips to start." });
+        if (ids.length < 2) return send(400, { error: "You need at least two answers to start." });
         for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
         room.order = ids; room.pos = 0; room.shown = false; room.phase = "reveal"; room.scores = {};
         await redis([["DEL", k.votes]]);
