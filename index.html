@@ -108,6 +108,21 @@ textarea{font-family:Caveat,cursive;font-size:28px;line-height:1.15;font-weight:
 .list .nm{font-weight:800;flex:none;background:var(--gold);border:2px solid var(--ink);border-radius:999px;padding:2px 10px;font-size:15px}
 .list .rm{flex:none;background:none;border:0;color:var(--cran);font-weight:700;min-height:44px;cursor:pointer;text-decoration:underline}
 
+/* ---------- prompt card */
+.pcard{position:relative;background:var(--gold);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:14px 16px 16px;margin-bottom:18px;transform:rotate(.8deg)}
+.pcard .k{font-weight:800;font-size:13px;letter-spacing:.02em;opacity:.75}
+.pcard .q{font-weight:800;font-size:clamp(22px,6.4vw,28px);line-height:1.1;letter-spacing:-.01em;margin-top:2px;text-wrap:balance}
+.pcard .btn-chip{margin-top:12px;background:var(--paper)}
+.picker{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.picker button{border:3px solid var(--ink);border-radius:999px;background:var(--paper);font-weight:700;font-size:15px;padding:8px 14px;cursor:pointer;box-shadow:0 3px 0 var(--ink);text-align:left}
+.picker button.sel{background:var(--gold)}
+.picker button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.picker .surprise{background:var(--cran);color:#fff}
+.slip .ptag{position:relative;display:inline-block;background:var(--gold);border:2px solid var(--ink);border-radius:999px;padding:1px 10px;font-size:13px;font-weight:800;margin-bottom:6px}
+.bd{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:-6px 0 16px}
+.bd span{background:rgba(255,253,246,.2);color:var(--paper);border-radius:999px;padding:3px 11px;font-weight:700;font-size:14px}
+.bd span.ok{background:var(--paper);color:var(--ink)}
+.tvLink{display:block;text-align:center;color:var(--paper);font-weight:700;margin:14px 0 0;text-decoration:underline}
 /* ---------- online */
 .inp{width:100%}
 .codeRow{display:flex;gap:10px}
@@ -189,11 +204,14 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
       </ul>
     </div>
     <button class="btn btn-quiet offLink" id="toPass" type="button">Only one phone? Pass it around instead</button>
+    <a class="tvLink" href="/tv.html">Showing the game on a TV? Open TV mode</a>
   </section>
 
   <!-- ONLINE ROOM: writing -->
   <section id="vRoom" class="hidden">
     <div class="bar"><div><div class="count" id="rCode">ABCD</div><div class="meta">Everyone joins with this code</div></div><button class="btn btn-chip" id="rLeave" type="button">Leave</button></div>
+    <div class="pcard" id="pcard"><div class="k">THIS ROUND'S PROMPT</div><div class="q" id="pText">Anything you're thankful for</div><button class="btn btn-chip hidden" id="pChange" type="button">Change prompt</button></div>
+    <div class="picker hidden" id="picker"></div>
     <div class="sheet" style="margin-bottom:16px" id="writeBox">
       <div id="writeForm">
         <div class="field"><label class="lbl" for="oTx">I'm thankful for…</label><textarea id="oTx" maxlength="200" placeholder="something only you would say"></textarea></div>
@@ -213,6 +231,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
     </div>
     <div id="rHost" class="hidden">
       <button class="btn btn-hot" id="rStart" type="button">Start the reveal</button>
+      <button class="btn btn-quiet offLink" id="rTv" type="button">Show it on a TV or laptop</button>
       <p class="hint" id="rHint" style="color:var(--paper);text-align:center"></p>
     </div>
     <p class="wait hidden" id="rWait"><span class="dotty">Waiting for the host to start the reveal</span></p>
@@ -222,7 +241,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
   <section id="vOReveal" class="hidden">
     <div class="bar"><div><div class="count" id="oProg">Slip 1</div><div class="meta" id="oProgOf">of 5</div></div><button class="btn btn-chip" id="oLeave2" type="button">Leave</button></div>
     <div class="dots" id="oDots"></div>
-    <div class="slip" id="oSlip"><div class="tag">Someone here is thankful for…</div><div class="hand" id="oSlipText"></div></div>
+    <div class="slip" id="oSlip"><div class="ptag hidden" id="oPTag"></div><div class="tag">Someone here is thankful for…</div><div class="hand" id="oSlipText"></div></div>
     <div id="oVoteBox">
       <p class="guess" id="oVoteLbl">Who wrote it? Tap your guess.</p>
       <div class="votes" id="oVotes"></div>
@@ -230,6 +249,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 84px)!important}
     <p class="vcount" id="oVCount"></p>
     <div class="who hidden" id="oWho"><span>Written by</span><b id="oWhoName"></b></div>
     <p class="right hidden" id="oRight"></p>
+    <div class="bd hidden" id="oBD"></div>
     <div id="oHostCtl" class="hidden stack">
       <button class="btn btn-hot" id="oShow" type="button">Reveal who wrote it</button>
       <button class="btn btn-go hidden" id="oNext" type="button">Next slip</button>
@@ -438,6 +458,7 @@ const oSave=()=>{ try{ localStorage.setItem(OKEY,JSON.stringify({pid:O.pid,name:
 oSave();
 let poller=null, busy=false, fails=0, L={phase:"",pos:-1,shown:null,editing:false,round:0}, V=null;
 $("oName").value=O.name||"";
+try{ const qc=new URLSearchParams(location.search).get("code"); if(qc&&/^[A-Za-z]{4}$/.test(qc)){ $("oCode").value=qc.toUpperCase(); } }catch(e){}
 
 async function call(method,body){
   const r = await fetch(method==="GET" ? `/api/room?code=${encodeURIComponent(O.code)}&pid=${encodeURIComponent(O.pid)}` : "/api/room", method==="GET" ? {cache:"no-store"} : {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
@@ -501,10 +522,29 @@ $("oShow").onclick=()=>api({action:"show"});
 $("oNext").onclick=()=>api({action:"next"});
 $("dAgain").onclick=()=>dialog("Play another round?","Everyone writes a new slip. Scores start over.",[{label:"New round",go:()=>api({action:"reset"})},{label:"Cancel",cls:"btn-quiet"}]);
 
+const PROMPTS=["Anything you're thankful for","A small, everyday thing","Something from this year","Someone who isn't here tonight","Someone at this table","A food (be specific!)","Something funny to be thankful for","A moment you'll never forget","Something about this group","A prayer God answered","Something you took for granted until you didn't","A place that feels like home"];
+function tvUrl(){ return `${location.origin}/tv.html?code=${V.room.code}`; }
+$("pChange").onclick=()=>{ const pk=$("picker"); const open=pk.classList.toggle("hidden")===false; $("pChange").textContent=open?"Close":"Change prompt"; if(open) paintPicker(); };
+function paintPicker(){
+  const cur=V.room.prompt||PROMPTS[0];
+  $("picker").innerHTML=`<button class="surprise" type="button" data-p="__r">🎲 Surprise me</button>`+PROMPTS.map(t=>`<button type="button" data-p="${esc(t)}" class="${t===cur?"sel":""}">${esc(t)}</button>`).join("");
+  $("picker").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    let t=b.dataset.p; if(t==="__r"){ const pool=PROMPTS.slice(1).filter(x=>x!==cur); t=pool[Math.floor(Math.random()*pool.length)]; }
+    $("picker").classList.add("hidden"); $("pChange").textContent="Change prompt";
+    api({action:"prompt",prompt:t===PROMPTS[0]?"":t});
+  });
+}
+$("rTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on a TV, laptop or tablet. It shows the code, the slips and the votes in big type. It doesn't count as a player.",[
+  {label:"Copy the TV link",go:async()=>{ try{ await navigator.clipboard.writeText(tvUrl()); }catch(e){} dialog("TV link",tvUrl(),[{label:"Done"}]); }},
+  {label:"Open TV mode on this device",cls:"btn-quiet",go:()=>{ location.href=tvUrl(); }},
+  {label:"Cancel",cls:"btn-quiet"}]);
 const nameOf=id=>{ const p=V.players.find(x=>x.id===id); return p?p.name:"Someone"; };
 
 function paintRoom(){
   const r=V.room, host=r.hostId===O.pid;
+  $("pText").textContent=r.prompt||PROMPTS[0];
+  $("pChange").classList.toggle("hidden",!host); if(!host) $("picker").classList.add("hidden");
+  $("oTx").placeholder = r.prompt ? "Keep it specific so it's fun to guess" : "something only you would say";
   $("rCode").textContent=r.code;
   const wrote=!!V.mySlip && !L.editing;
   $("writeForm").classList.toggle("hidden",wrote); $("writeDone").classList.toggle("hidden",!wrote);
@@ -522,10 +562,11 @@ function paintReveal(){
   const r=V.room, host=r.hostId===O.pid, sl=V.slip;
   $("oProg").textContent=`Slip ${r.pos+1}`; $("oProgOf").textContent=`of ${r.total}`;
   $("oDots").innerHTML=Array.from({length:r.total},(_,i)=>`<i class="${i<r.pos?"done":i===r.pos?"cur":""}"></i>`).join("");
+  $("oPTag").textContent=r.prompt?`Prompt: ${r.prompt}`:""; $("oPTag").classList.toggle("hidden",!r.prompt);
   if(L.pos!==r.pos||L.phase!=="reveal"){ $("oSlipText").textContent=sl.text; const el=$("oSlip"); el.classList.remove("pull"); void el.offsetWidth; el.classList.add("pull"); }
   const voters=V.players.filter(p=>p.id!==(r.shown?sl.author:"")).length;
   if(!r.shown){
-    $("oVoteBox").classList.remove("hidden"); $("oWho").classList.add("hidden"); $("oRight").classList.add("hidden");
+    $("oVoteBox").classList.remove("hidden"); $("oWho").classList.add("hidden"); $("oRight").classList.add("hidden"); $("oBD").classList.add("hidden");
     if(sl.mine){ $("oVoteLbl").textContent="This one's yours! Keep a straight face."; $("oVotes").innerHTML=""; }
     else{
       $("oVoteLbl").textContent = V.myVote ? "Got it. You can change your guess until the host reveals." : "Who wrote it? Tap your guess.";
@@ -540,6 +581,8 @@ function paintReveal(){
     const mineRight = sl.right.includes(O.name);
     $("oRight").textContent = sl.right.length ? `Guessed right: ${sl.right.join(", ")}${mineRight?" (nice!)":""}` : "Nobody guessed it!";
     $("oRight").classList.remove("hidden");
+    $("oBD").innerHTML=(sl.breakdown||[]).map(b=>`<span class="${b.correct?"ok":""}">${esc(b.name)} ${b.n}</span>`).join("");
+    $("oBD").classList.toggle("hidden",!(sl.breakdown||[]).length);
   }
   $("oHostCtl").classList.toggle("hidden",!host); $("oWaitR").classList.toggle("hidden",host);
   if(host){ $("oShow").classList.toggle("hidden",r.shown); $("oNext").classList.toggle("hidden",!r.shown); $("oNext").textContent = r.pos+1<r.total ? "Next slip" : "See the scoreboard"; }
@@ -577,7 +620,7 @@ else show("vStart");
 <div class="scrim" id="rulesScrim"><div class="sheet dialog rulesDlg" role="dialog" aria-modal="true" aria-label="Rules"><h2>How to play Who's Thankful For That?</h2>
 <p>Everyone secretly writes one thing they're thankful for. Then the group guesses who wrote each one.</p>
 <h3>1. Join and write</h3>
-<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>Write one specific thing you're thankful for. Keep it secret, and don't put your name in it.</li><li>Specific is more fun: "the 6am coffee before the kids wake up" beats "family."</li></ul>
+<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>Write one specific thing you're thankful for. Keep it secret, and don't put your name in it.</li><li>Specific is more fun: "the 6am coffee before the kids wake up" beats "family."</li><li>The host can pick a prompt for the round, like "a small, everyday thing" or "something from this year." Write to the prompt.</li></ul>
 <h3>2. Read it out loud</h3>
 <ul><li>The host starts the reveal. The same slip shows on every phone.</li><li>Someone reads it out loud so the whole table is on the same one.</li></ul>
 <h3>3. Talk, then vote</h3>
@@ -586,6 +629,7 @@ else show("vStart");
 <ul><li>The host taps <b>Reveal</b>. Everyone sees who wrote it and who guessed right. Each right guess is 1 point.</li><li>Then the writer gets a moment to share why they're thankful for it. This is the best part, so don't skip it.</li></ul>
 <h3>5. Scoreboard</h3>
 <ul><li>After the last slip, the scoreboard and every slip show up. Most points gets bragging rights.</li><li>The host can start another round with new slips.</li></ul>
+<div class="tip"><b>Have a TV?</b> Open TV mode (link at the bottom of the start screen, or "Show it on a TV" in the host's lobby) to show the slips, votes and scoreboard big for the whole room.</div>
 <div class="tip"><b>Only one phone?</b> Use "Pass it around instead." Each person adds a slip and hands the phone on, then the table guesses out loud.</div><div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div></div></div>
 <script>
 {const sc=document.getElementById("rulesScrim");

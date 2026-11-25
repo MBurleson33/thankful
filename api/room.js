@@ -37,7 +37,7 @@ function view(raw, me) {
   const { room, players, slips, votes } = raw;
   const name = id => (players.find(p => p.id === id) || { name: "Someone" }).name;
   const out = {
-    room: { code: room.code, hostId: room.hostId, phase: room.phase, pos: room.pos, total: room.order.length, shown: room.shown, scores: room.scores, round: room.round },
+    room: { code: room.code, hostId: room.hostId, phase: room.phase, pos: room.pos, total: room.order.length, shown: room.shown, scores: room.scores, round: room.round, prompt: room.prompt || "" },
     players: players.map(p => ({ id: p.id, name: p.name, wrote: !!slips[p.id] })),
     mySlip: slips[me] || "",
   };
@@ -51,6 +51,9 @@ function view(raw, me) {
       out.slip.author = author; out.slip.authorName = name(author);
       out.slip.right = cur.filter(v => v.guess === author).map(v => name(v.voter));
       out.slip.fooled = cur.filter(v => v.guess !== author).length;
+      const tally = {};
+      cur.forEach(v => { tally[v.guess] = (tally[v.guess] || 0) + 1; });
+      out.slip.breakdown = Object.entries(tally).map(([id, n]) => ({ name: name(id), n, correct: id === author })).sort((a, b) => b.n - a.n);
     }
   }
   if (room.phase === "done") {
@@ -90,7 +93,7 @@ module.exports = async (req, res) => {
       const L = "ABCDEFGHJKLMNPQRSTUVWXYZ";
       for (let tries = 0; tries < 8; tries++) {
         let code = ""; for (let i = 0; i < 4; i++) code += L[Math.floor(Math.random() * L.length)];
-        const room = { code, hostId: pid, phase: "collect", order: [], pos: 0, shown: false, scores: {}, round: 1 };
+        const room = { code, hostId: pid, phase: "collect", order: [], pos: 0, shown: false, scores: {}, round: 1, prompt: "" };
         const k = K(code);
         const [ok] = await redis([["SET", k.room, JSON.stringify(room), "NX", "EX", TTL]]);
         if (ok !== "OK") continue;
@@ -135,7 +138,11 @@ module.exports = async (req, res) => {
     } else {
       // Host only from here
       if (!isHost) return send(403, { error: "Only the host can do that." });
-      if (action === "kick") {
+      if (action === "prompt") {
+        if (room.phase !== "collect") return send(400, { error: "Change the prompt before the reveal starts." });
+        room.prompt = String(body.prompt || "").replace(/\s+/g, " ").trim().slice(0, 90);
+        await saveRoom();
+      } else if (action === "kick") {
         const who = cleanId(body.who);
         if (who && who !== room.hostId) await redis([["HDEL", k.players, who], ["HDEL", k.slips, who]]);
       } else if (action === "start") {

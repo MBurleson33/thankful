@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#3a1d12">
+<title>Thankful · TV mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--pump:#e8742a;--pump-deep:#c95d1b;--ink:#3a1d12;--paper:#fffdf6;--mist:#fbeedd;--gold:#ffd447;--cran:#c2334a;--muted:#7a5240}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(120% 90% at 50% 0%,var(--pump) 0%,var(--pump-deep) 100%);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;overflow:hidden}
+.hidden{display:none!important}
+.stage{height:100vh;display:grid;grid-template-rows:auto 1fr;padding:2.2vw 3vw 2.6vw;gap:1.6vw}
+.top{display:flex;align-items:center;justify-content:space-between;gap:2vw;color:var(--paper)}
+.brand{display:flex;align-items:center;gap:1vw;font-weight:800;font-size:clamp(18px,2vw,34px);text-shadow:0 3px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+.brand svg{width:clamp(36px,3.4vw,60px)}
+.joinpill{display:flex;align-items:center;gap:1vw;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 5px 0 var(--ink);padding:.5vw 1.4vw;font-weight:700;font-size:clamp(14px,1.4vw,24px)}
+.joinpill b{font-size:1.5em;letter-spacing:.14em}
+.sheet{background:var(--paper);border:4px solid var(--ink);border-radius:2vw;box-shadow:0 .7vw 0 var(--ink)}
+.title{font-weight:800;color:var(--paper);text-shadow:0 .35vw 0 var(--ink);-webkit-text-stroke:.15vw var(--ink);paint-order:stroke fill;line-height:1;letter-spacing:-.02em;margin:0}
+
+/* code entry */
+.entry{display:grid;place-items:center;text-align:center}
+.entry .sheet{padding:3vw 4vw;max-width:680px;width:100%}
+.entry h1{font-size:clamp(28px,3.4vw,56px);margin:0 0 .6em;line-height:1.05}
+.entry p{color:var(--muted);font-size:clamp(16px,1.4vw,22px);margin:0 0 1.2em}
+.entry input{width:100%;font:800 clamp(40px,5vw,80px) "Bricolage Grotesque",sans-serif;letter-spacing:.3em;text-align:center;text-transform:uppercase;background:var(--mist);border:4px solid var(--ink);border-radius:20px;padding:.1em .3em;outline:none;color:var(--ink)}
+.entry input:focus{background:#fff}
+.entry button{margin-top:18px;width:100%;border:4px solid var(--ink);border-radius:999px;background:var(--gold);font:800 clamp(20px,1.8vw,30px) "Bricolage Grotesque",sans-serif;padding:.5em;box-shadow:0 6px 0 var(--ink);cursor:pointer;color:var(--ink)}
+.entry .err{color:var(--cran);font-weight:700;min-height:1.4em;margin-top:12px;font-size:clamp(15px,1.3vw,20px)}
+
+/* collect */
+.collect{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:3vw;align-items:center;min-height:0}
+.joinbox{text-align:center;padding:2.4vw}
+.joinbox .lbl{font-weight:700;color:var(--muted);font-size:clamp(16px,1.5vw,26px)}
+.joinbox .code{font-size:clamp(60px,10vw,190px);font-weight:800;letter-spacing:.12em;line-height:1;margin:.1em 0 .15em}
+.joinbox .url{font-weight:800;font-size:clamp(16px,1.6vw,28px)}
+.qr{display:inline-block;background:#fff;border:4px solid var(--ink);border-radius:1.2vw;padding:1vw;margin-top:1.4vw}
+.qr svg{display:block;width:clamp(120px,13vw,250px);height:clamp(120px,13vw,250px)}
+.right{display:grid;gap:2vw;align-content:center;min-height:0}
+.pcard{background:var(--gold);border:4px solid var(--ink);border-radius:2vw;box-shadow:0 .7vw 0 var(--ink);padding:1.8vw 2.2vw;transform:rotate(-1deg)}
+.pcard .k{font-weight:800;font-size:clamp(13px,1.2vw,20px);opacity:.7}
+.pcard .q{font-weight:800;font-size:clamp(28px,3.6vw,64px);line-height:1.05;letter-spacing:-.015em;text-wrap:balance}
+.roster{padding:1.6vw 2vw}
+.roster .head{font-weight:800;font-size:clamp(18px,1.8vw,32px);margin-bottom:1vw}
+.chips{display:flex;flex-wrap:wrap;gap:.8vw}
+.chip{color:var(--ink);display:flex;align-items:center;gap:.5vw;border:3px solid var(--ink);border-radius:999px;padding:.35vw 1vw .35vw .4vw;font-weight:800;font-size:clamp(16px,1.6vw,28px);background:var(--mist)}
+.chip i{font-style:normal;width:1.7em;height:1.7em;border-radius:50%;display:grid;place-items:center;background:var(--paper);border:2px solid var(--ink);font-size:.7em}
+.chip.on{background:var(--gold)}
+.chip.on i{background:var(--ink);color:var(--gold)}
+.chip.pop{animation:pop .35s ease-out}
+
+/* reveal */
+.reveal{display:grid;grid-template-rows:auto 1fr auto;gap:1.4vw;min-height:0}
+.prog{display:flex;align-items:center;justify-content:space-between;color:var(--paper);gap:2vw}
+.prog .n{font-weight:800;font-size:clamp(22px,2.6vw,46px);text-shadow:0 3px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+.dots{display:flex;gap:.6vw;flex-wrap:wrap}
+.dots i{width:clamp(10px,1.1vw,20px);height:clamp(10px,1.1vw,20px);border-radius:50%;background:rgba(255,253,246,.35)}
+.dots i.done{background:var(--ink)}.dots i.cur{background:var(--paper);outline:3px solid var(--ink)}
+.slipwrap{display:grid;place-items:center;min-height:0}
+.slip{position:relative;background:var(--paper);border:4px solid var(--ink);border-radius:12px;box-shadow:0 1vw 0 var(--ink);padding:2.4vw 3.4vw 2.8vw;transform:rotate(-1.4deg);width:min(78vw,1400px);transition:transform .5s,width .5s}
+.slip::before{content:"";position:absolute;inset:0;border-radius:9px;background:repeating-linear-gradient(transparent 0 4.4vw,rgba(58,29,18,.09) 4.4vw calc(4.4vw + 2px));pointer-events:none}
+.slip .ptag{position:relative;display:inline-block;background:var(--gold);border:3px solid var(--ink);border-radius:999px;padding:.1em .8em;font-weight:800;font-size:clamp(14px,1.3vw,22px);margin-bottom:.6vw}
+.slip .tag{position:relative;font-weight:700;color:var(--muted);font-size:clamp(16px,1.6vw,28px)}
+.slip .hand{position:relative;font-family:Caveat,cursive;font-weight:700;font-size:clamp(44px,6.4vw,124px);line-height:1.05;overflow-wrap:anywhere;margin-top:.4vw;text-wrap:balance}
+.slip.pull{animation:pull .6s ease-out}
+.slip.small{transform:rotate(-1.4deg) scale(.82);transform-origin:top center}
+@keyframes pull{from{opacity:0;transform:translateY(8vh) rotate(5deg)}}
+.bottom{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2vw;align-items:end}
+.votebar{color:var(--paper)}
+.votebar .q{font-weight:800;font-size:clamp(20px,2.2vw,40px);text-shadow:0 3px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;margin-bottom:.8vw}
+.vc{background:var(--paper);border:4px solid var(--ink);border-radius:1.6vw;box-shadow:0 .5vw 0 var(--ink);padding:1vw 1.8vw;text-align:center}
+.vc b{display:block;font-size:clamp(34px,4.4vw,80px);line-height:1}
+.vc span{font-weight:700;color:var(--muted);font-size:clamp(14px,1.2vw,20px)}
+
+/* answer */
+.answer{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:2.4vw;align-items:stretch}
+.who{background:var(--cran);color:#fff;border:4px solid var(--ink);border-radius:2vw;box-shadow:0 .7vw 0 var(--ink);padding:1.6vw 2vw;display:flex;flex-direction:column;justify-content:center;animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.who span{font-weight:700;font-size:clamp(16px,1.6vw,28px);opacity:.9}
+.who b{font-size:clamp(44px,6vw,110px);line-height:1;letter-spacing:-.02em;overflow-wrap:anywhere}
+.bars{padding:1.4vw 2vw;display:grid;gap:.8vw;align-content:center}
+.bars .h{font-weight:800;font-size:clamp(16px,1.5vw,26px)}
+.bar{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) 2.4em;align-items:center;gap:1vw;font-weight:800;font-size:clamp(16px,1.6vw,28px)}
+.bar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .track{height:clamp(18px,2vw,36px);background:var(--mist);border:3px solid var(--ink);border-radius:999px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:rgba(58,29,18,.35);border-radius:999px;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar.ok .fill{background:var(--gold)}
+.bar.ok .nm::after{content:" ✓"}
+.bar .c{text-align:right}
+.bars .none{color:var(--muted);font-weight:700;font-size:clamp(16px,1.5vw,26px)}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+
+/* done */
+.done{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:2.4vw;min-height:0}
+.board{padding:1.6vw 2vw;overflow:hidden}
+.board h2{margin:0 0 1vw;font-size:clamp(22px,2.4vw,42px)}
+.row{display:flex;align-items:center;gap:1vw;padding:.6vw 0;border-bottom:3px dashed rgba(58,29,18,.15);font-weight:800;font-size:clamp(18px,1.9vw,34px)}
+.row:last-child{border-bottom:0}
+.row .medal{width:1.8em;height:1.8em;border-radius:12px;border:3px solid var(--ink);display:grid;place-items:center;background:var(--mist);font-size:.75em}
+.row.lead .medal{background:var(--gold)}
+.row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wall{display:flex;flex-wrap:wrap;gap:1.2vw;align-content:flex-start;overflow:hidden}
+.wall .card{background:var(--paper);border:3px solid var(--ink);border-radius:10px;box-shadow:0 .5vw 0 var(--ink);padding:1vw 1.3vw;max-width:28vw}
+.wall .card:nth-child(3n+1){transform:rotate(-1.6deg)}.wall .card:nth-child(3n+2){transform:rotate(1.2deg)}
+.wall .card .t{font-family:Caveat,cursive;font-size:clamp(22px,2.3vw,42px);line-height:1.05;overflow-wrap:anywhere}
+.wall .card .n{font-weight:800;color:var(--muted);font-size:clamp(13px,1.1vw,20px);margin-top:.3vw}
+.wallTitle{flex-basis:100%;margin-bottom:-.2vw}
+.net{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:var(--paper);border-radius:999px;padding:8px 16px;font-weight:700;display:none}
+.net.on{display:block}
+@media (max-width:820px){
+  body{overflow:auto}.stage{height:auto;min-height:100vh}
+  .collect,.answer,.done,.bottom{grid-template-columns:1fr}
+  .slip{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="top">
+    <div class="brand"><svg viewBox="0 0 84 84" aria-hidden="true"><g stroke="#3a1d12" stroke-width="3" stroke-linejoin="round"><rect x="22" y="12" width="20" height="28" rx="3" fill="#fffdf6" transform="rotate(-14 32 26)"/><rect x="40" y="8" width="20" height="30" rx="3" fill="#ffd447" transform="rotate(12 50 23)"/><path d="M10 40h64l-7 30a6 6 0 0 1-6 5H23a6 6 0 0 1-6-5z" fill="#a8622c"/><path d="M15 52h54M17 62h50" fill="none" stroke-width="2.5"/><rect x="6" y="36" width="72" height="9" rx="4.5" fill="#c2334a"/></g></svg>Who's Thankful For That?</div>
+    <div class="joinpill hidden" id="pill">Join at <span id="pillHost"></span> · code <b id="pillCode"></b></div>
+  </div>
+
+  <!-- code entry -->
+  <main class="entry" id="vEntry">
+    <form class="sheet" id="entryForm" autocomplete="off">
+      <h1>TV mode</h1>
+      <p>Type the game's 4-letter code. This screen shows the slips and votes for the whole room. It doesn't count as a player.</p>
+      <input id="codeIn" maxlength="4" placeholder="CODE" autocapitalize="characters" spellcheck="false" aria-label="Game code">
+      <button type="submit">Show the game</button>
+      <div class="err" id="entryErr"></div>
+    </form>
+  </main>
+
+  <!-- collect -->
+  <main class="collect hidden" id="vCollect">
+    <div class="sheet joinbox">
+      <div class="lbl">Grab your phone and go to</div>
+      <div class="url" id="joinUrl"></div>
+      <div class="lbl" style="margin-top:1vw">then join with code</div>
+      <div class="code" id="bigCode">ABCD</div>
+      <div class="qr" id="qr" aria-label="QR code to join"></div>
+    </div>
+    <div class="right">
+      <div class="pcard"><div class="k">THIS ROUND'S PROMPT</div><div class="q" id="cPrompt"></div></div>
+      <div class="sheet roster"><div class="head" id="cHead">Waiting for players</div><div class="chips" id="cChips"></div></div>
+    </div>
+  </main>
+
+  <!-- reveal -->
+  <main class="reveal hidden" id="vReveal">
+    <div class="prog"><div class="n" id="rN">Slip 1 of 5</div><div class="dots" id="rDots"></div></div>
+    <div class="slipwrap"><div class="slip" id="slip"><div class="ptag hidden" id="rPrompt"></div><div class="tag">Someone here is thankful for…</div><div class="hand" id="rText"></div></div></div>
+    <div class="bottom" id="rVoting">
+      <div class="votebar"><div class="q">Who wrote it? Vote on your phone</div><div class="chips" id="rChips"></div></div>
+      <div class="vc"><b id="rCount">0/0</b><span>voted</span></div>
+    </div>
+    <div class="answer hidden" id="rAnswer">
+      <div class="who"><span>Written by</span><b id="aName"></b></div>
+      <div class="sheet bars" id="aBars"></div>
+    </div>
+  </main>
+
+  <!-- done -->
+  <main class="done hidden" id="vDone">
+    <div class="sheet board"><h2>Scoreboard</h2><div id="dBoard"></div></div>
+    <div class="wall" id="dWall"></div>
+  </main>
+</div>
+<div class="net" id="net">Reconnecting…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const VIEWS=["vEntry","vCollect","vReveal","vDone"];
+const show=id=>VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));
+const DEFAULT_PROMPT="Anything you're thankful for";
+let code="", poller=null, fails=0, L={phase:"",pos:-1,shown:null,written:{}}, lock=null;
+
+const host=location.host;
+$("pillHost").textContent=host; $("joinUrl").textContent=host;
+
+async function wake(){ try{ if("wakeLock" in navigator){ lock=await navigator.wakeLock.request("screen"); } }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&code) wake(); });
+
+$("codeIn").addEventListener("input",e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z]/g,""); });
+$("entryForm").addEventListener("submit",e=>{ e.preventDefault(); start($("codeIn").value.trim()); });
+
+async function fetchRoom(){
+  const r=await fetch(`/api/room?code=${encodeURIComponent(code)}&pid=tvscreen`,{cache:"no-store"});
+  const j=await r.json().catch(()=>({error:"The game server didn't answer."}));
+  if(!r.ok){ const e=new Error(j.error||"Something went wrong."); e.status=r.status; throw e; }
+  return j;
+}
+async function start(c){
+  c=(c||"").toUpperCase();
+  if(!/^[A-Z]{4}$/.test(c)){ $("entryErr").textContent="Type the 4-letter code from the host's phone."; return; }
+  code=c; $("entryErr").textContent="";
+  try{ const j=await fetchRoom(); history.replaceState(null,"",`?code=${code}`); render(j); clearInterval(poller); poller=setInterval(tick,1500); wake(); }
+  catch(e){ $("entryErr").textContent=e.message; code=""; }
+}
+async function tick(){
+  try{ const j=await fetchRoom(); fails=0; $("net").classList.remove("on"); render(j); }
+  catch(e){
+    if(e.status===404){ clearInterval(poller); code=""; $("pill").classList.add("hidden"); show("vEntry"); $("entryErr").textContent="That game has ended. Type a new code."; return; }
+    if(++fails>=2) $("net").classList.add("on");
+  }
+}
+
+function qr(){
+  const url=`${location.origin}/?code=${code}`;
+  try{ const q=qrcode(0,"M"); q.addData(url); q.make(); $("qr").innerHTML=q.createSvgTag({cellSize:6,margin:0,scalable:true}); }
+  catch(e){ $("qr").classList.add("hidden"); }
+}
+
+function render(j){
+  const r=j.room, P=j.players, nm=id=>(P.find(p=>p.id===id)||{name:"?"}).name;
+  $("pill").classList.toggle("hidden",r.phase==="collect"); $("pillCode").textContent=r.code;
+  if(r.phase==="collect"){
+    if(L.phase!=="collect"){ show("vCollect"); $("bigCode").textContent=r.code; qr(); L.written={}; }
+    $("cPrompt").textContent=r.prompt||DEFAULT_PROMPT;
+    const n=P.filter(p=>p.wrote).length;
+    $("cHead").textContent = P.length ? `${n} of ${P.length} slips in` : "Waiting for players to join";
+    $("cChips").innerHTML=P.map(p=>`<span class="chip ${p.wrote?"on":""} ${p.wrote&&!L.written[p.id]?"pop":""}"><i>${p.wrote?"✓":"✎"}</i>${esc(p.name)}</span>`).join("");
+    P.forEach(p=>{ if(p.wrote) L.written[p.id]=1; });
+  }
+  else if(r.phase==="reveal"){
+    show("vReveal");
+    const sl=j.slip;
+    $("rN").textContent=`Slip ${r.pos+1} of ${r.total}`;
+    $("rDots").innerHTML=Array.from({length:r.total},(_,i)=>`<i class="${i<r.pos?"done":i===r.pos?"cur":""}"></i>`).join("");
+    $("rPrompt").textContent=r.prompt?`Prompt: ${r.prompt}`:""; $("rPrompt").classList.toggle("hidden",!r.prompt);
+    if(L.phase!=="reveal"||L.pos!==r.pos){ $("rText").textContent=sl.text; const el=$("slip"); el.classList.remove("pull","small"); void el.offsetWidth; el.classList.add("pull"); }
+    $("slip").classList.toggle("small",r.shown);
+    $("rVoting").classList.toggle("hidden",r.shown); $("rAnswer").classList.toggle("hidden",!r.shown);
+    if(!r.shown){
+      const voted=new Set(j.voted||[]);
+      $("rChips").innerHTML=P.map(p=>`<span class="chip ${voted.has(p.id)?"on":""}"><i>${voted.has(p.id)?"✓":"…"}</i>${esc(p.name)}</span>`).join("");
+      $("rCount").textContent=`${voted.size}/${Math.max(P.length-1,0)}`;
+    } else if(!L.shown || L.pos!==r.pos || L.phase!=="reveal"){
+      $("aName").textContent=sl.authorName;
+      const bd=sl.breakdown||[], total=bd.reduce((a,b)=>a+b.n,0)||1;
+      $("aBars").innerHTML = bd.length
+        ? `<div class="h">${sl.right.length?`Guessed right: ${esc(sl.right.join(", "))}`:"Nobody guessed it!"}</div>`+bd.map(b=>`<div class="bar ${b.correct?"ok":""}"><span class="nm">${esc(b.name)}</span><span class="track"><span class="fill" data-w="${Math.round(b.n/total*100)}"></span></span><span class="c">${b.n}</span></div>`).join("")
+        : `<div class="h">Nobody voted on this one.</div>`;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>$("aBars").querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%")));
+    }
+  }
+  else {
+    if(L.phase!=="done"){
+      show("vDone");
+      const sc=r.scores||{}, rows=P.map(p=>({n:p.name,s:sc[p.id]||0})).sort((a,b)=>b.s-a.s), top=rows.length?rows[0].s:0;
+      $("dBoard").innerHTML=rows.map(x=>`<div class="row ${x.s===top&&top>0?"lead":""}"><span class="medal">${x.s===top&&top>0?"★":""}</span><span class="nm">${esc(x.n)}</span><span>${x.s}</span></div>`).join("");
+      $("dWall").innerHTML=`<div class="title wallTitle" style="font-size:clamp(22px,2.4vw,42px)">What this room is thankful for</div>`+(j.all||[]).map(s=>`<div class="card"><div class="t">${esc(s.text)}</div><div class="n">${esc(s.name)}</div></div>`).join("");
+    }
+  }
+  L.phase=r.phase; L.pos=r.pos; L.shown=r.shown;
+}
+
+const qc=new URLSearchParams(location.search).get("code");
+if(qc){ $("codeIn").value=qc.toUpperCase(); start(qc); } else { show("vEntry"); $("codeIn").focus(); }
+}
+</script>
+</body>
+</html>
