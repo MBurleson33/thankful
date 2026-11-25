@@ -9,3 +9,7 @@ Single static file (`index.html`), no server. Answers are saved in the phone's b
 
 ## Run it
 Open `index.html`, or enable GitHub Pages (Settings → Pages → Deploy from branch → `main` / root).
+
+## Gobble Minds
+
+A second game lives at `/gobble/` (TV mode at `/gobble/tv.html`), using the same Upstash database through `api/gobble.js`. Everyone answers a prompt; matching the most popular answer scores, and a lone unique answer takes the turkey.
