@@ -186,7 +186,7 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 {
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const NAMES={chameleon:"Chameleon",thankful:"Who's Thankful For That?",gobble:"Gobble Minds",scribble:"Scribble Telephone"};
+const NAMES={chameleon:"Chameleon",thankful:"Who's Thankful For That?",gobble:"Gobble Minds",scribble:"Scribble Telephone",trivia:"Fast Finger Trivia"};
 const TVP=g=>g==="thankful"?"/tv.html":`/${g}/tv.html`;
 const VIEWS=["vEntry","vLobby","vPlaying"];
 const show=id=>VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));

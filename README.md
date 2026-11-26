@@ -21,3 +21,7 @@ At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write
 ## Party mode
 
 `/party/` lets everyone join once; the host picks a game and every phone (and `/party/tv.html`) follows. Each game room reuses the party code (`want` on create). `party-link.js` adds the party bar and follows switches. Chameleon is also served here at `/chameleon/` via `api/chameleon.js` (same data prefix as the standalone Chameleon project).
+
+## Fast Finger Trivia
+
+At `/trivia/` (TV mode at `/trivia/tv.html`), using `api/trivia.js`. Everyone answers the same multiple-choice question on their own phone; right answers score 500-1,000 points by speed, plus a streak bonus. The host picks categories (Bible, holidays, food, geography, science, history, sports, movies & games), 10/15/20 questions and 10-30 seconds per question. Questions live server-side in `api/_trivia-bank.js` so answers never reach phones early; a room won't repeat questions across games. Works with party mode.

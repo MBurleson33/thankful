@@ -3,8 +3,8 @@
 // shows a slim party bar (host gets "Switch game"), and follows the host to whatever game is picked.
 (function () {
   const KEY = "party-v1";
-  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1" };
-  const NAMES = { chameleon: "Chameleon", thankful: "Who's Thankful For That?", gobble: "Gobble Minds", scribble: "Scribble Telephone" };
+  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1", trivia: "trivia-online-v1" };
+  const NAMES = { chameleon: "Chameleon", thankful: "Who's Thankful For That?", gobble: "Gobble Minds", scribble: "Scribble Telephone", trivia: "Fast Finger Trivia" };
   const qs = new URLSearchParams(location.search);
   const code = String(qs.get("party") || "").toUpperCase();
   const isTV = document.body.classList.contains("tv");

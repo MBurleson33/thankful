@@ -6,9 +6,9 @@ const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TO
 const TTL = 60 * 60 * 24;
 const P = "party:";
 const CODE_RE = /^[A-Z]{4}$/;
-const GAMES = ["chameleon", "thankful", "gobble", "scribble"];
+const GAMES = ["chameleon", "thankful", "gobble", "scribble", "trivia"];
 // game room keys that a new party code must not collide with
-const GAME_ROOM_KEYS = code => ["chameleon:room:" + code, "thankful:room:" + code, "gobble:room:" + code, "scribble:room:" + code];
+const GAME_ROOM_KEYS = code => ["chameleon:room:" + code, "thankful:room:" + code, "gobble:room:" + code, "scribble:room:" + code, "trivia:room:" + code];
 
 async function redis(cmds) {
   const r = await fetch(`${URL_}/pipeline`, {
