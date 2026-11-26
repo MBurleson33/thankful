@@ -240,6 +240,36 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
 .chipsel{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 16px}
 .chipsel button{flex:1;min-width:64px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font-weight:600;cursor:pointer}
 .chipsel button.sel{background:var(--forest);color:#fbf6ec;border-color:var(--forest)}
+/* reveal controls */
+.ctl{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 10px);z-index:5;background:linear-gradient(transparent,var(--linen) 30%);padding-top:18px;margin-top:-8px}
+body.ctlOn .rulesFab{display:none}
+.yours{margin-bottom:14px}
+.yours .q{font-size:20px!important}
+/* voting gallery */
+.gchain{margin-bottom:20px}
+.gchain h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:0 0 8px}
+.gGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.tile{position:relative;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;gap:6px;min-height:92px;box-shadow:0 1px 2px rgba(60,40,20,.08)}
+.tile canvas{width:100%;aspect-ratio:1/1;border-radius:8px;background:#fffcf7;display:block;box-shadow:inset 0 0 0 1px var(--line)}
+.tile .tby{font-size:12px;color:var(--muted);padding-right:54px}
+.tile .tby b{color:var(--ink)}
+.tile .txt{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.tile.mine,.tile.gone{opacity:.45;cursor:default}
+.tile.sel{border-color:var(--forest);box-shadow:0 0 0 2px var(--forest)}
+.tile .heart{position:absolute;top:6px;right:6px;background:var(--forest);color:#fbf6ec;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600;display:none}
+.tile.sel .heart{display:block}
+.tile.mine .heart{display:block;background:var(--gold-soft);color:var(--ink)}
+.vstat{position:sticky;top:calc(env(safe-area-inset-top) + 8px);z-index:4;background:var(--forest);color:#fbf6ec;border-radius:999px;padding:8px 14px;font-weight:600;font-size:15px;text-align:center;margin:0 0 14px;box-shadow:var(--shadow)}
+/* favorites + scores */
+.win{margin-bottom:12px}
+.win .vt{color:var(--cran);font-weight:600}
+.win .ctx{font-size:14px;color:var(--muted);margin:-2px 0 8px}
+.win .ctx i{font-family:var(--serif);color:var(--ink)}
+.win .pair{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
+.win .pair canvas{width:96px}
+.win>canvas{max-width:260px;margin:0 auto}
+.sh{margin:0 0 6px;font-family:var(--serif);font-weight:600;font-size:19px}
+.plist .gain{color:var(--forest);font-weight:600;font-size:14px}
 </style>
 </head>
 <body>
@@ -265,7 +295,8 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
       <ul>
         <li>Everyone writes a short phrase to start their own chain.</li>
         <li>Your phone passes it on: the next person draws it, the next guesses the drawing, and so on.</li>
-        <li>At the end, the host reveals each chain one step at a time. That's the fun part.</li>
+        <li>Then each person reveals their own chain, one step at a time. That's the fun part.</li>
+        <li>Vote for your favorite drawing or guess. Most votes after all the rounds wins.</li>
       </ul>
     </div>
     <a class="tvLink" href="tv.html">Showing the game on a TV? Open TV mode</a>
@@ -281,6 +312,8 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
     <div id="lHost" class="hidden">
       <div class="lbl">Time to draw</div>
       <div class="chipsel" id="timerSel"><button type="button" data-t="60">60 sec</button><button type="button" data-t="90" class="sel">90 sec</button><button type="button" data-t="120">2 min</button><button type="button" data-t="0">No timer</button></div>
+      <div class="lbl">How many rounds</div>
+      <div class="chipsel" id="roundSel"><button type="button" data-r="1">1 round</button><button type="button" data-r="2" class="sel">2 rounds</button><button type="button" data-r="3">3 rounds</button></div>
       <div id="capBox" class="hidden">
         <div class="lbl">How far each chain goes</div>
         <div class="chipsel" id="capSel"><button type="button" data-c="0" class="sel">Everyone</button><button type="button" data-c="8">8 passes</button><button type="button" data-c="6">6 passes</button></div>
@@ -328,7 +361,7 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
       <div class="sheet" style="margin-bottom:16px"><ul class="plist" id="pList"></ul></div>
     </div>
 
-    <div id="tOut" class="sheet cover hidden"><h2>You're in the next game</h2><p>A round is already going. Hang tight, and you'll be in when the host starts again.</p></div>
+    <div id="tOut" class="sheet cover hidden"><h2>You're in the next round</h2><p>A round is already going. Hang tight. You'll join when the next round starts.</p></div>
     <div id="pHost" class="hidden stack" style="margin-top:6px"><button class="btn btn-quiet" id="pSkip" type="button">Move on without the stragglers</button></div>
   </section>
 
@@ -336,17 +369,41 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
   <section id="vReveal" class="hidden">
     <div class="bar"><div><div class="count" id="rHead">Chain 1</div><div class="meta" id="rMeta"></div></div></div>
     <p class="chainHead" id="rOwner"></p>
+    <div class="pcard yours hidden" id="rYours"><div class="k">It's your chain!</div><div class="q">Tap the button to show each step to everyone. Tell them what you were thinking.</div></div>
     <div class="chain" id="rChain"></div>
-    <div id="rHost" class="hidden stack">
+    <p class="wait" id="rWait"></p>
+    <div id="rCtl" class="ctl hidden">
       <button class="btn btn-go" id="rNext" type="button">Show the next step</button>
-      <button class="btn btn-quiet" id="rBack" type="button">Back one step</button>
+      <button class="btn btn-quiet" id="rBack" type="button" style="margin-top:8px">Back one step</button>
     </div>
-    <p class="wait hidden" id="rWait"><span class="dotty">The host is revealing</span></p>
+    <button class="btn btn-quiet offLink hidden" id="rNudge" type="button"></button>
+  </section>
+
+  <!-- VOTE -->
+  <section id="vVote" class="hidden">
+    <div class="bar"><div><div class="count">Pick a favorite</div><div class="meta" id="vMeta"></div></div></div>
+    <p class="hint" style="margin:0 0 12px">Tap the funniest drawing or guess. Whoever made it gets a point. You can change your pick until voting closes.</p>
+    <div class="vstat" id="vStat"></div>
+    <div id="vGal"></div>
+    <div id="vHost" class="hidden stack"><button class="btn btn-go" id="vClose" type="button">Close voting</button></div>
+  </section>
+
+  <!-- RESULTS (between rounds) -->
+  <section id="vResults" class="hidden">
+    <div class="hello" style="margin-top:0" id="resHead">Round 1 favorites</div>
+    <div id="resWin" style="margin-top:12px"></div>
+    <div class="sheet" style="margin:6px 0 18px"><p class="sh">Scores</p><ul class="plist" id="resBoard"></ul></div>
+    <div id="resHost" class="hidden stack"><button class="btn btn-go" id="resNext" type="button">Start round 2</button></div>
+    <p class="wait hidden" id="resWait"><span class="dotty">Waiting for the host to start the next round</span></p>
   </section>
 
   <!-- DONE -->
   <section id="vDone" class="hidden">
-    <div class="hello" style="margin-top:0">How it started, how it ended</div>
+    <div class="who" id="champ"><span id="champK">Champion</span><b id="champN"></b></div>
+    <div class="sheet" style="margin:0 0 18px"><p class="sh">Final scores</p><ul class="plist" id="dBoard"></ul></div>
+    <div class="hello">Last round's favorites</div>
+    <div id="dWin" style="margin-top:12px"></div>
+    <div class="hello">How it started, how it ended</div>
     <div class="sheet" style="margin:10px 0 18px" id="dSum"></div>
     <div id="dHost" class="hidden stack"><button class="btn btn-go" id="dAgain" type="button">Play again</button></div>
     <p class="wait hidden" id="dWait"><span class="dotty">Waiting for the host</span></p>
@@ -362,13 +419,15 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
 <h2>How to play Scribble Telephone</h2>
 <p>Like the old telephone game, but with drawings. The worse the drawing, the better the ending.</p>
 <h3>1. Join</h3>
-<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>The host picks how long to draw, then starts. You need at least 3 players.</li></ul>
+<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>The host picks how long to draw and how many rounds (1 to 3), then starts. You need at least 3 players.</li></ul>
 <h3>2. Write</h3>
 <ul><li>Everyone writes a short phrase to start their own chain, like "Grandma winning at football."</li><li>Stuck? Tap <b>Give me an idea</b>.</li></ul>
 <h3>3. Draw, guess, repeat</h3>
 <ul><li>Your phone shows you someone else's chain. If it's a phrase, <b>draw it</b>. If it's a drawing, <b>guess what it is</b>.</li><li>You only ever see the step right before yours.</li><li>No letters or numbers in drawings. That's cheating!</li><li>When time runs out, whatever you have gets passed on.</li></ul>
 <h3>4. The reveal</h3>
-<ul><li>When every chain has gone around, the host reveals them one step at a time on every phone and the TV.</li><li>Take turns explaining what you were thinking. There's no score; the laughs are the point.</li></ul>
+<ul><li>When every chain has gone around, each person reveals <b>their own chain</b>. Your phone gets a button; tap it to show each step on every phone and the TV.</li><li>Tell everyone what you wrote and what you were thinking. When you finish, it passes to the next person.</li></ul>
+<h3>5. Vote and score</h3>
+<ul><li>After the reveals, everyone taps their favorite drawing or guess (not your own). Each vote is a point for whoever made it.</li><li>Then a new round starts with fresh phrases. After the last round, the most points wins.</li></ul>
 <div class="tip"><b>Have a TV?</b> Tap "Show it on a TV or laptop" in the lobby so everyone can watch the reveal together.</div>
 <div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div>
 </div></div>
@@ -380,7 +439,7 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
 {
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const VIEWS=["vStart","vLobby","vPlay","vReveal","vDone"];
+const VIEWS=["vStart","vLobby","vPlay","vReveal","vVote","vResults","vDone"];
 function show(id){ VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id)); document.body.classList.toggle("compact",id!=="vStart"); window.scrollTo(0,0); }
 const IDEAS=["A turkey on a treadmill","Grandma winning at football","Santa stuck in a chimney","A pie-eating contest","Noah's ark traffic jam","A snowman at the beach","The dog stole the ham","Napping after dinner","A pilgrim taking a selfie","Too many cooks in the kitchen","A reindeer at the dentist","Burnt marshmallows","Jonah inside the whale","A cat wrapped like a present","Black Friday stampede","Building a gingerbread house","Dad carving the turkey","A scarecrow at a disco","David and Goliath","The kids' table","A snowball fight","Lost car keys","A llama on a road trip","Fireworks on New Year's Eve","An egg hunt in the rain","Leftover sandwich tower"];
 
@@ -410,11 +469,12 @@ try{ const qc=new URLSearchParams(location.search).get("code"); if(qc&&/^[A-Za-z
 
 let V=null, poller=null, busy=false, fails=0, offset=0;
 let L={phase:"",game:0,round:-1,taskKey:"",bookKey:""};
-let prevCache={key:"",prev:null}, chainCache={key:"",list:[]};
+let prevCache={key:"",prev:null}, chainCache={key:"",list:[]}, galCache={game:0,list:null}, winCache={game:0,list:[]};
 function qs(){
   const p=new URLSearchParams({code:O.code,pid:O.pid});
   if(prevCache.key) p.set("r",prevCache.key.split("|")[0]);
   if(chainCache.key){ const [g,b]=chainCache.key.split(":"); p.set("g",g); p.set("rb",b); p.set("k",String(chainCache.list.length)); }
+  if(galCache.list) p.set("vg",galCache.game); if(winCache.game) p.set("wg",winCache.game);
   return p.toString();
 }
 async function call(method,body){
@@ -425,7 +485,7 @@ async function call(method,body){
   if(!r.ok){ const e=new Error(j.error||"Something went wrong."); e.status=r.status; throw e; }
   return j;
 }
-function extra(){ const b={}; if(prevCache.key) b.r=prevCache.key.split("|")[0]; if(chainCache.key){ const [g,bk]=chainCache.key.split(":"); b.g=g; b.rb=bk; b.k=String(chainCache.list.length);} return b; }
+function extra(){ const b={}; if(prevCache.key) b.r=prevCache.key.split("|")[0]; if(chainCache.key){ const [g,bk]=chainCache.key.split(":"); b.g=g; b.rb=bk; b.k=String(chainCache.list.length);} if(galCache.list) b.vg=galCache.game; if(winCache.game) b.wg=winCache.game; return b; }
 async function api(body,errEl){
   try{ const j=await call("POST",Object.assign({pid:O.pid,code:O.code},extra(),body)); apply(j); return true; }
   catch(e){ if(errEl) errEl.textContent=e.message; else dialog("That didn't go through",e.message,[{label:"OK"}]); return false; }
@@ -448,7 +508,7 @@ $("joinBtn").onclick=async()=>{
   try{ O.code=code; const j=await call("POST",{action:"join",pid:O.pid,code,name}); oSave(); goOnline(j); }catch(e){ $("oErr").textContent=e.message; O.code=""; oSave(); }
   busy=false;
 };
-function goOnline(j){ L={phase:"",game:0,round:-1,taskKey:"",bookKey:""}; prevCache={key:"",prev:null}; chainCache={key:"",list:[]}; apply(j); clearInterval(poller); poller=setInterval(poll,1500); }
+function goOnline(j){ L={phase:"",game:0,round:-1,taskKey:"",bookKey:""}; prevCache={key:"",prev:null}; chainCache={key:"",list:[]}; galCache={game:0,list:null}; winCache={game:0,list:[]}; apply(j); clearInterval(poller); poller=setInterval(poll,1500); }
 async function poll(){
   if(!O.code) return;
   try{ const j=await call("GET"); fails=0; $("net").classList.remove("on"); apply(j); }
@@ -467,13 +527,22 @@ $("lTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on 
   {label:"Open TV mode on this device",cls:"btn-quiet",go:()=>{ location.href=tvUrl(); }},{label:"Cancel",cls:"btn-quiet"}]);
 
 // ---------- lobby settings
-let timer=90, cap=0;
+let timer=90, cap=0, totalRounds=2;
+$("roundSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ totalRounds=+b.dataset.r; $("roundSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"settings",totalRounds}); });
 $("timerSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ timer=+b.dataset.t; $("timerSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"settings",timer}); });
 $("capSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ cap=+b.dataset.c; $("capSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); });
-$("lStart").onclick=()=>api({action:"start",timer,cap});
+$("lStart").onclick=()=>api({action:"start",timer,cap,totalRounds});
 $("pSkip").onclick=()=>dialog("Move on now?","Anyone still working gets skipped this round. Their step will show as \"ran out of time.\"",[{label:"Move on",cls:"btn-hot",go:()=>api({action:"skip"})},{label:"Wait a bit",cls:"btn-quiet"}]);
-$("rNext").onclick=()=>api({action:"next"});
-$("rBack").onclick=()=>api({action:"back"});
+const at=()=>V.room.revealBook*100+V.room.revealStep;
+$("rNext").onclick=()=>api({action:"next",at:at()});
+$("rBack").onclick=()=>api({action:"back",at:at()});
+$("rNudge").onclick=()=>api({action:"next",at:at()});
+$("vClose").onclick=()=>{
+  const left=eligible().filter(id=>!(V.voted||[]).includes(id)).map(nameOf);
+  if(!left.length) return api({action:"closeVotes"});
+  dialog("Close voting now?",`Still waiting on ${left.join(", ")}. Their votes won't count this round.`,[{label:"Close voting",cls:"btn-hot",go:()=>api({action:"closeVotes"})},{label:"Wait a bit",cls:"btn-quiet"}]);
+};
+$("resNext").onclick=()=>api({action:"nextRound"});
 $("dAgain").onclick=()=>api({action:"lobby"});
 
 // ---------- drawing pad
@@ -534,26 +603,28 @@ function paintLobby(){
   if(isHost()){
     timer=V.room.timer; $("timerSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",+x.dataset.t===timer));
     $("capBox").classList.toggle("hidden",n<=6);
+    totalRounds=V.room.totalRounds||2; $("roundSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",+x.dataset.r===totalRounds));
     $("lStart").disabled=n<3;
-    $("lHint").textContent=n<3?`Need at least 3 players (${3-n} more).`:`Each chain gets ${Math.max(3,Math.min(n,cap||n))} steps.`;
+    $("lHint").textContent=n<3?`Need at least 3 players (${3-n} more).`:`${totalRounds} round${totalRounds===1?"":"s"}. Each chain gets ${Math.max(3,Math.min(n,cap||n))} steps.`;
   }
 }
 function paintPlay(){
   const r=V.room, t=V.task;
-  $("pRound").textContent=`Round ${r.round+1} of ${r.rounds}`;
+  $("pRound").textContent=r.totalRounds>1?`Round ${r.roundNo} of ${r.totalRounds}`:`Turn ${r.round+1} of ${r.rounds}`;
+  const turn=r.totalRounds>1?`Turn ${r.round+1} of ${r.rounds} · `:"";
   const doneSet=new Set(V.done||[]);
   ["tWrite","tDraw","tGuess","tWait","tOut"].forEach(id=>$(id).classList.add("hidden"));
-  if(!t){ $("pMeta").textContent=`${doneSet.size} of ${r.order.length} passed on`; $("tOut").classList.remove("hidden"); $("pHost").classList.add("hidden"); return; }
+  if(!t){ $("pMeta").textContent=`${doneSet.size} of ${r.order.length} passed on`; $("pRound").textContent="Sit this one out"; $("tOut").classList.remove("hidden"); $("pHost").classList.add("hidden"); return; }
   const key=`${r.game}:${t.round}`;
   if(t.prev) prevCache={key:key+"|",prev:t.prev};
   const prev=prevCache.key===key+"|"?prevCache.prev:null;
   const fresh=L.taskKey!==key;
   if(fresh){ L.taskKey=key; strokes=[]; cur=null; $("wIn").value=""; $("gIn").value=""; ["wErr","dErr","gErr"].forEach(id=>$(id).textContent=""); }
-  $("pMeta").textContent=t.kind==="write"?"Write a phrase":t.kind==="draw"?"Draw it":"Guess it";
+  $("pMeta").textContent=turn+(t.kind==="write"?"Write a phrase":t.kind==="draw"?"Draw it":"Guess it");
   if(t.submitted){
     $("tWait").classList.remove("hidden");
     const left=r.order.filter(id=>!doneSet.has(id)).map(nameOf);
-    $("waitText").textContent=left.length?`Waiting for ${left.join(", ")}.`:"Everyone's in. Next round coming up!";
+    $("waitText").textContent=left.length?`Waiting for ${left.join(", ")}.`:"Everyone's in. Next turn coming up!";
     $("pList").innerHTML=r.order.map(id=>`<li><span class="st ${doneSet.has(id)?"ok":""}">${doneSet.has(id)?"✓":"✎"}</span><span class="nm">${esc(nameOf(id))}</span>${id===O.pid?'<span class="me">You</span>':""}</li>`).join("");
   } else if(t.kind==="write"){ $("tWrite").classList.remove("hidden"); if(fresh) setTimeout(()=>$("wIn").focus(),50); }
   else if(t.kind==="draw"){
@@ -579,9 +650,10 @@ function paintReveal(){
   const before=chainCache.list.length;
   if(b.entries&&b.entries.length){ chainCache.list=chainCache.list.slice(0,b.from).concat(b.entries); }
   chainCache.list=chainCache.list.slice(0,b.step+1);
-  $("rHead").textContent=`Chain ${b.index+1} of ${r.order.length}`;
-  $("rMeta").textContent=`Step ${b.step+1} of ${r.rounds}`;
-  $("rOwner").textContent=`${b.ownerName}'s chain`;
+  const mine=b.owner===O.pid;
+  $("rHead").textContent=mine?"Your chain":`${b.ownerName}'s chain`;
+  $("rMeta").textContent=`Chain ${b.index+1} of ${r.order.length} · step ${b.step+1} of ${r.rounds}`;
+  $("rOwner").textContent="";
   const nodes=[...$("rChain").children];
   if(nodes.length!==chainCache.list.length){
     $("rChain").innerHTML=chainCache.list.map((e,i)=>`<div class="ent ${i>=before&&i===chainCache.list.length-1?"new":""}">${entHTML(e,i)}</div>`).join("");
@@ -589,11 +661,84 @@ function paintReveal(){
     const last=$("rChain").lastElementChild; if(last&&chainCache.list.length>before) last.scrollIntoView({behavior:"smooth",block:"center"});
   }
   const lastStep=b.step>=r.rounds-1, lastBook=b.index>=r.order.length-1;
-  $("rHost").classList.toggle("hidden",!isHost()); $("rWait").classList.toggle("hidden",isHost());
-  $("rNext").textContent=!lastStep?"Show the next step":lastBook?"Finish":"Next chain";
-  $("rBack").disabled=b.index===0&&b.step===0;
+  const nextName=lastBook?"":nameOf(r.order[b.index+1]);
+  $("rYours").classList.toggle("hidden",!mine||lastStep);
+  $("rCtl").classList.toggle("hidden",!mine); document.body.classList.toggle("ctlOn",mine);
+  $("rNext").textContent=!lastStep?"Show the next step":lastBook?"Done! Time to vote":r.order[b.index+1]===O.pid?"Next: your chain":`Pass to ${nextName}`;
+  $("rBack").classList.toggle("hidden",b.step===0);
+  $("rWait").innerHTML=mine?"":lastStep?(lastBook?`<span class="dotty">${esc(b.ownerName)} is wrapping up. Voting is next</span>`:`<span class="dotty">${esc(b.ownerName)} is about to pass to ${esc(r.order[b.index+1]===O.pid?"you":nextName)}</span>`):`<span class="dotty">${esc(b.ownerName)} is revealing their chain</span>`;
+  $("rNudge").classList.toggle("hidden",!(isHost()&&!mine));
+  $("rNudge").textContent=`Host: tap for ${b.ownerName} if they're stuck`;
+}
+// ---------- voting
+const eligible=()=>{ const here=new Set(V.players.map(p=>p.id)); return V.room.order.filter(id=>here.has(id)); };
+function tileHTML(e){
+  const mine=e.by===O.pid, gone=e.skipped||(e.kind==="draw"&&!(e.strokes&&e.strokes.length));
+  const verb=e.kind==="write"?"wrote":e.kind==="draw"?"drew":"guessed";
+  const body=e.kind==="draw"?(gone?'<div class="txt" style="color:var(--muted)">No drawing</div>':`<canvas data-k="${e.b}:${e.i}"></canvas>`):`<div class="txt">${esc(e.text||"(nothing)")}</div>`;
+  return `<button class="tile ${mine?"mine":""} ${gone&&!mine?"gone":""}" type="button" data-k="${e.b}:${e.i}" ${mine||gone?"disabled":""}><span class="heart">${mine?"Yours":"♥ Your pick"}</span><span class="tby"><b>${esc(e.byName)}</b> ${verb}</span>${body}</button>`;
+}
+function paintVote(){
+  const r=V.room;
+  if(V.gallery){ galCache={game:r.game,list:V.gallery}; $("vGal").innerHTML=""; }
+  if(galCache.game!==r.game||!galCache.list) return;
+  if(!$("vGal").children.length){
+    $("vGal").innerHTML=galCache.list.map(c=>`<div class="gchain"><h3>${c.owner===O.pid?"Your chain":esc(c.ownerName)+"'s chain"}</h3><div class="gGrid">${c.entries.map(tileHTML).join("")}</div></div>`).join("");
+    const byKey={}; galCache.list.forEach(c=>c.entries.forEach(e=>byKey[`${e.b}:${e.i}`]=e));
+    $("vGal").querySelectorAll("canvas").forEach(cv=>scDraw(cv,byKey[cv.dataset.k].strokes||[]));
+    $("vGal").querySelectorAll(".tile:not([disabled])").forEach(t=>t.onclick=()=>{
+      if(!V.room.order.includes(O.pid)) return;
+      V.myVote=t.dataset.k; markVote(); api({action:"vote",pick:t.dataset.k});
+    });
+  }
+  markVote();
+  const el=eligible(), voted=(V.voted||[]).filter(id=>el.includes(id));
+  $("vMeta").textContent=r.totalRounds>1?`Round ${r.roundNo} of ${r.totalRounds}`:"";
+  $("vStat").textContent=!r.order.includes(O.pid)?`${voted.length} of ${el.length} voted. You'll vote next round.`:V.myVote?`You voted ✓ · ${voted.length} of ${el.length} in`:`Tap a card to vote · ${voted.length} of ${el.length} in`;
+  $("vHost").classList.toggle("hidden",!isHost());
+}
+function markVote(){ $("vGal").querySelectorAll(".tile").forEach(t=>t.classList.toggle("sel",t.dataset.k===V.myVote)); }
+
+// ---------- favorites and scores
+function winHTML(w,i){
+  const verb=w.kind==="write"?"wrote":w.kind==="draw"?"drew":"guessed";
+  const vt=`<span class="vt">♥ ${w.votes} vote${w.votes===1?"":"s"}</span>`;
+  let body="";
+  if(w.kind==="draw") body=`${w.prevText?`<div class="ctx">for <i>"${esc(w.prevText)}"</i></div>`:""}<canvas data-w="${i}"></canvas>`;
+  else if(w.kind==="guess"&&w.prevStrokes) body=`<div class="pair"><canvas data-p="${i}"></canvas><div class="txt">${esc(w.text)}</div></div>`;
+  else body=`<div class="txt">${esc(w.text)}</div>`;
+  return `<div class="ent win"><div class="by"><b>${esc(w.byName)}</b> ${verb} · ${vt}</div>${body}</div>`;
+}
+function paintWinners(el){
+  const list=winCache.list;
+  el.innerHTML=list.length?list.map(winHTML).join(""):`<p class="hint" style="text-align:center">No votes this round.</p>`;
+  el.querySelectorAll("canvas[data-w]").forEach(c=>scDraw(c,list[+c.dataset.w].strokes||[]));
+  el.querySelectorAll("canvas[data-p]").forEach(c=>scDraw(c,list[+c.dataset.p].prevStrokes||[]));
+}
+function boardRows(){
+  const sc=V.room.scores||{}, g=V.room.gain||{};
+  return Object.keys(sc).map(id=>({id,name:nameOf(id),pts:sc[id]||0,gain:g[id]||0})).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name));
+}
+function paintBoard(el){
+  const rows=boardRows(); let rank=0, last=null;
+  el.innerHTML=rows.map((x,i)=>{ if(x.pts!==last){ rank=i+1; last=x.pts; } return `<li><span class="st ${rank===1?"ok":""}">${rank}</span><span class="nm">${esc(x.name)}${x.id===O.pid?' <span class="me">(you)</span>':""}</span>${x.gain?`<span class="gain">+${x.gain}</span>`:""}<span class="pts">${x.pts}</span></li>`; }).join("");
+}
+function takeWinners(){ if(V.winners) winCache={game:V.room.game,list:V.winners}; return winCache.game===V.room.game; }
+function paintResults(){
+  const r=V.room, fresh=V.winners;
+  $("resHead").textContent=`Round ${r.roundNo} favorites`;
+  if(takeWinners()&&fresh) paintWinners($("resWin"));
+  paintBoard($("resBoard"));
+  $("resNext").textContent=`Start round ${r.roundNo+1} of ${r.totalRounds}`;
+  $("resHost").classList.toggle("hidden",!isHost()); $("resWait").classList.toggle("hidden",isHost());
 }
 function paintDone(){
+  const fresh=V.winners;
+  if(takeWinners()&&fresh) paintWinners($("dWin"));
+  paintBoard($("dBoard"));
+  const rows=boardRows(), top=rows.length?rows[0].pts:0, champs=rows.filter(x=>x.pts===top&&top>0).map(x=>x.name);
+  $("champK").textContent=champs.length>1?"It's a tie!":"Champion";
+  $("champN").textContent=champs.length?champs.join(" & "):"Everyone";
   $("dSum").innerHTML=(V.summary||[]).map(s=>`<div class="sumRow"><b>${esc(s.owner)}'s chain</b><span>${esc(s.start||"…")}</span>${s.end!==null?`<span class="arrow">→</span><span>${esc(s.end)}</span>`:`<span class="arrow">→</span><span style="font-style:normal;color:var(--muted)">ended on a drawing</span>`}</div>`).join("");
   $("dHost").classList.toggle("hidden",!isHost()); $("dWait").classList.toggle("hidden",isHost());
 }
@@ -605,7 +750,10 @@ function apply(j){
   if(r.phase==="lobby"){ if(changed) show("vLobby"); paintLobby(); }
   else if(r.phase==="play"){ if(changed||L.round!==r.round) show("vPlay"); paintPlay(); }
   else if(r.phase==="reveal"){ if(changed) show("vReveal"); paintReveal(); }
-  else { if(changed){ show("vDone"); setTimeout(()=>window.leafBurst&&leafBurst($("dSum"),24),200); } paintDone(); }
+  else if(r.phase==="vote"){ if(changed){ show("vVote"); $("vGal").innerHTML=""; } paintVote(); }
+  else if(r.phase==="results"){ if(changed){ show("vResults"); setTimeout(()=>window.leafBurst&&leafBurst($("resWin"),20),200); } paintResults(); }
+  else { if(changed){ show("vDone"); setTimeout(()=>window.leafBurst&&leafBurst($("champ"),36),200); } paintDone(); }
+  if(r.phase!=="reveal") document.body.classList.remove("ctlOn");
   L.phase=r.phase; L.game=r.game; L.round=r.round;
 }
 

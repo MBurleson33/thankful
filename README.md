@@ -16,7 +16,7 @@ A second game lives at `/gobble/` (TV mode at `/gobble/tv.html`), using the same
 
 ## Scribble Telephone
 
-At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write, draw, guess, pass it on; the host reveals each chain step by step. Drawings are stored as compact strokes.
+At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write, draw, guess, pass it on. Each owner reveals their own chain from their phone, everyone votes for a favorite drawing or guess (1 point per vote), and a game runs 1-3 rounds with a running scoreboard. Drawings are stored as compact strokes.
 
 ## Party mode
 

@@ -166,6 +166,17 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 .sumCard b{display:block;color:var(--cran);font-size:clamp(13px,1.1vw,20px)}
 .sumCard .s{font-family:var(--serif);font-style:italic;font-size:clamp(18px,1.7vw,32px);line-height:1.15}
 .sumCard .a{color:var(--gold);margin:.2vw 0}
+.scoreView{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:2.6vw;min-height:0}
+.favCol{display:grid;grid-template-rows:auto 1fr auto;gap:1vw;min-height:0}
+.favCol .stageCard{min-height:0}
+.ctxLine{font-size:clamp(16px,1.4vw,26px);color:var(--muted)}
+.ctxLine i{font-family:var(--serif);color:var(--ink)}
+.vtag{color:var(--cran);font-weight:600}
+.champ{position:relative;background:var(--cran);color:#fbf6ec;border-radius:1.2vw;box-shadow:var(--shadow);padding:1.4vw 2vw;margin-bottom:1.4vw;animation:rise .6s ease-out}
+.champ::after{content:"";position:absolute;inset:.5vw;border:1px solid rgba(251,246,236,.35);border-radius:.8vw;pointer-events:none}
+.champ span{font-family:var(--serif);font-style:italic;font-size:clamp(16px,1.5vw,28px);opacity:.85}
+.champ b{display:block;font-family:var(--serif);font-weight:600;font-size:clamp(36px,4.4vw,84px);line-height:1.05;overflow-wrap:anywhere}
+.row .gain{color:var(--forest);font-size:.75em}
 </style>
 </head>
 <body class="tv">
@@ -213,6 +224,26 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
     <div class="trail"><h2 id="tOwner"></h2><div class="meta" id="tMeta"></div><div id="tList" style="display:grid;gap:.7vw"></div></div>
   </main>
 
+  <main class="playView hidden" id="vVote">
+    <div class="bigRound"><div class="pcard"><div class="k" id="vK">Voting</div><div class="q">Pick your favorite drawing or guess on your phone</div></div></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2.4vw;align-items:end">
+      <div><div class="chips" id="vChips"></div></div>
+      <div class="vc"><b id="vCount">0/0</b><span>voted</span></div>
+    </div>
+  </main>
+
+  <main class="scoreView hidden" id="vScore">
+    <div class="favCol">
+      <div class="hello" id="fHead">Round 1 favorite</div>
+      <div class="stageCard" id="fStage"><div class="by" id="fBy"></div><div class="stageBody" id="fBody"></div></div>
+      <div id="fMore" style="display:grid;grid-template-columns:1fr 1fr;gap:1vw"></div>
+    </div>
+    <div style="min-height:0;overflow:hidden">
+      <div class="champ hidden" id="champ"><span id="champK">Champion</span><b id="champN"></b></div>
+      <div class="sheet board" style="align-self:start"><h2 id="bHead">Scores</h2><div id="bRows"></div></div>
+    </div>
+  </main>
+
   <main class="done hidden" id="vDone" style="grid-template-columns:1fr">
     <div style="display:grid;gap:1.4vw;align-content:start;min-height:0">
       <div class="hello">How it started, how it ended</div>
@@ -230,9 +261,9 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 {
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const VIEWS=["vEntry","vLobby","vPlay","vReveal","vDone"];
+const VIEWS=["vEntry","vLobby","vPlay","vReveal","vVote","vScore","vDone"];
 const show=id=>VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));
-let code="", poller=null, fails=0, L={phase:"",game:0,round:-1,step:-1,book:-1}, lock=null, chain={key:"",list:[]};
+let code="", poller=null, fails=0, L={phase:"",game:0,round:-1,step:-1,book:-1}, lock=null, chain={key:"",list:[]}, win={game:0,list:[]};
 const joinBase=location.origin+location.pathname.replace(/[^/]*$/,"");
 $("pillHost").textContent=joinBase.replace(/^https?:\/\//,"").replace(/\/$/,""); $("joinUrl").textContent=$("pillHost").textContent;
 
@@ -244,6 +275,7 @@ $("entryForm").addEventListener("submit",e=>{ e.preventDefault(); start($("codeI
 async function fetchRoom(){
   const p=new URLSearchParams({code,pid:"tvscreen"});
   if(chain.key){ const [g,b]=chain.key.split(":"); p.set("g",g); p.set("rb",b); p.set("k",String(chain.list.length)); }
+  p.set("vg","tv"); if(win.game) p.set("wg",win.game);
   const r=await fetch(`/api/scribble?${p}`,{cache:"no-store"});
   const j=await r.json().catch(()=>({error:"The game server didn't answer."}));
   if(!r.ok){ const e=new Error(j.error||"Something went wrong."); e.status=r.status; throw e; }
@@ -276,7 +308,7 @@ function render(j){
   else if(r.phase==="play"){
     if(changed) show("vPlay");
     const kind=r.round===0?"write":(r.round%2===1?"draw":"guess");
-    $("pK").textContent=`Round ${r.round+1} of ${r.rounds}`; $("pQ").textContent=KIND_LINE[kind];
+    $("pK").textContent=(r.totalRounds>1?`Round ${r.roundNo} of ${r.totalRounds} · `:"")+`Turn ${r.round+1} of ${r.rounds}`; $("pQ").textContent=KIND_LINE[kind];
     const done=new Set(j.done||[]);
     $("pChips").innerHTML=r.order.map(id=>`<span class="chip ${done.has(id)?"on":""}"><i>${done.has(id)?"✓":"✎"}</i>${esc(nm(id))}</span>`).join("");
     $("pCount").textContent=`${done.size}/${r.order.length}`;
@@ -296,12 +328,32 @@ function render(j){
         if($("sCanvas")) requestAnimationFrame(()=>scDraw($("sCanvas"),e.strokes));
         if(b.step===r.rounds-1) setTimeout(()=>window.leafBurst&&leafBurst($("stage"),24),300);
       }
-      $("tOwner").textContent=`${b.ownerName}'s chain`;
+      $("tOwner").textContent=`${b.ownerName} is revealing`;
       $("tMeta").textContent=`Chain ${b.index+1} of ${r.order.length} · step ${b.step+1} of ${r.rounds}`;
       $("tList").innerHTML=chain.list.map((e,i)=>`<div class="mini ${i===b.step?"cur":""}">${e.kind==="draw"&&e.strokes&&e.strokes.length?`<canvas data-i="${i}"></canvas>`:""}<div style="min-width:0"><div class="n">${esc(e.byName)} ${VERB[e.kind]||""}</div>${e.kind!=="draw"?`<div class="t">${esc(e.text||"")}</div>`:(!(e.strokes&&e.strokes.length)?`<div class="t" style="color:var(--muted)">No drawing</div>`:"")}</div></div>`).join("");
       $("tList").querySelectorAll("canvas").forEach(c=>scDraw(c,chain.list[+c.dataset.i].strokes||[]));
     }
     L.book=b.index; L.step=b.step;
+  }
+  else if(r.phase==="vote"){
+    if(changed) show("vVote");
+    const here=new Set(P.map(p=>p.id)), el=r.order.filter(id=>here.has(id)), v=new Set(j.voted||[]);
+    $("vK").textContent=r.totalRounds>1?`Round ${r.roundNo} of ${r.totalRounds} · voting`:"Voting";
+    $("vChips").innerHTML=el.map(id=>`<span class="chip ${v.has(id)?"on":""}"><i>${v.has(id)?"✓":"♥"}</i>${esc(nm(id))}</span>`).join("");
+    $("vCount").textContent=`${el.filter(id=>v.has(id)).length}/${el.length}`;
+  }
+  else if(r.phase==="results"||r.phase==="done"){
+    if(changed){ show("vScore"); setTimeout(()=>window.leafBurst&&leafBurst($(r.phase==="done"?"champ":"fStage"),36),400); }
+    if(j.winners){ win={game:r.game,list:j.winners}; paintFav(r); }
+    else if(changed) paintFav(r);
+    const sc=r.scores||{}, g=r.gain||{};
+    const rows=Object.keys(sc).map(id=>({name:nm(id),pts:sc[id]||0,gain:g[id]||0})).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name));
+    let rank=0,last=null;
+    $("bRows").innerHTML=rows.map((x,i)=>{ if(x.pts!==last){rank=i+1;last=x.pts;} return `<div class="row ${rank===1?"lead":""}"><span class="medal">${rank}</span><span class="nm">${esc(x.name)}</span>${x.gain?`<span class="gain">+${x.gain}</span>`:""}<span>${x.pts}</span></div>`; }).join("");
+    const done=r.phase==="done", top=rows.length?rows[0].pts:0, champs=rows.filter(x=>x.pts===top&&top>0).map(x=>x.name);
+    $("bHead").textContent=done?"Final scores":`Scores after round ${r.roundNo} of ${r.totalRounds}`;
+    $("champ").classList.toggle("hidden",!done);
+    $("champK").textContent=champs.length>1?"It's a tie!":"Champion"; $("champN").textContent=champs.length?champs.join(" & "):"Everyone";
   }
   else {
     if(changed){ show("vDone"); setTimeout(()=>window.leafBurst&&leafBurst($("dWall"),40),300); }
@@ -310,6 +362,25 @@ function render(j){
   L.phase=r.phase; L.game=r.game; L.round=r.round;
 }
 
+function paintFav(r){
+  const list=win.game===r.game?win.list:[];
+  $("fHead").textContent=r.phase==="done"?(r.totalRounds>1?"Last round's favorite":"Crowd favorite"):`Round ${r.roundNo} favorite`;
+  const w=list[0];
+  if(!w){ $("fBy").textContent=""; $("fBody").innerHTML='<div class="txt skip">No votes this round</div>'; $("fMore").innerHTML=""; return; }
+  const vt=`<span class="vtag">♥ ${w.votes} vote${w.votes===1?"":"s"}</span>`;
+  if(w.kind==="draw"){
+    $("fBy").innerHTML=`<b>${esc(w.byName)}</b> drew ${w.prevText?`<i>"${esc(w.prevText)}"</i>`:""} · ${vt}`;
+    $("fBody").innerHTML='<canvas id="fCanvas"></canvas>'; requestAnimationFrame(()=>scDraw($("fCanvas"),w.strokes||[]));
+  } else if(w.kind==="guess"&&w.prevStrokes){
+    $("fBy").innerHTML=`<b>${esc(w.byName)}</b> looked at this and guessed · ${vt}`;
+    $("fBody").innerHTML=`<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2vw;align-items:center;height:100%;width:100%"><canvas id="fCanvas" style="max-height:48vh;width:100%;height:auto"></canvas><div class="txt">${esc(w.text)}</div></div>`;
+    requestAnimationFrame(()=>scDraw($("fCanvas"),w.prevStrokes||[]));
+  } else {
+    $("fBy").innerHTML=`<b>${esc(w.byName)}</b> wrote · ${vt}`; $("fBody").innerHTML=`<div class="txt">${esc(w.text)}</div>`;
+  }
+  $("fMore").innerHTML=list.slice(1).map((x,i)=>`<div class="mini">${x.kind==="draw"&&x.strokes&&x.strokes.length?`<canvas data-m="${i+1}"></canvas>`:""}<div style="min-width:0"><div class="n">${esc(x.byName)} · ♥ ${x.votes}</div>${x.kind!=="draw"?`<div class="t">${esc(x.text)}</div>`:`<div class="t">${esc(x.prevText?`"${x.prevText}"`:"a drawing")}</div>`}</div></div>`).join("");
+  $("fMore").querySelectorAll("canvas").forEach(c=>scDraw(c,list[+c.dataset.m].strokes||[]));
+}
 const qc=new URLSearchParams(location.search).get("code");
 if(qc){ $("codeIn").value=qc.toUpperCase(); start(qc); } else { show("vEntry"); $("codeIn").focus(); }
 }
