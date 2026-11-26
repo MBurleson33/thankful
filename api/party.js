@@ -92,6 +92,11 @@ module.exports = async (req, res) => {
       await redis([["HSET", k.players, pid, JSON.stringify({ name, t })], ["EXPIRE", k.players, TTL], ["EXPIRE", k.room, TTL]]);
     } else if (action === "leave") {
       if (pid !== room.hostId) await redis([["HDEL", k.players, pid]]);
+    } else if (action === "end") {
+      // host ends the game night: everyone's phone sees the party is gone and returns to the start screen
+      if (pid !== room.hostId) return send(403, { error: "Only the host can end the party." });
+      await redis([["DEL", k.room, k.players]]);
+      return send(200, { ended: true });
     } else {
       if (pid !== room.hostId) return send(403, { error: "Only the host can do that." });
       if (action === "game") {

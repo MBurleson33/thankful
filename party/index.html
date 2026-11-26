@@ -343,8 +343,10 @@ async function poll(){
 function stop(){ clearInterval(poller); poller=null; M.code=""; M.hostId=""; save(); $("net").classList.remove("on"); show("vStart"); }
 $("lLeave").onclick=()=>{
   const host=V&&V.room.hostId===M.pid;
-  dialog("Leave the party?",host?"You're the host. If you leave, nobody can pick the next game.":"You can rejoin with the same code.",[
-    {label:"Leave party",cls:"btn-hot",go:async()=>{ try{ await call("POST",{action:"leave",pid:M.pid,code:M.code}); }catch(e){} stop(); }},{label:"Stay",cls:"btn-quiet"}]);
+  if(host) dialog("End the game night?",`Everyone's phone goes back to the start screen, and party ${M.code} closes. You can host a new one anytime.`,[
+    {label:"End it for everyone",cls:"btn-hot",go:async()=>{ try{ await call("POST",{action:"end",pid:M.pid,code:M.code}); }catch(e){} stop(); }},{label:"Keep it going",cls:"btn-quiet"}]);
+  else dialog("Leave the game night?","You can rejoin anytime with the same code.",[
+    {label:"Leave",cls:"btn-hot",go:async()=>{ try{ await call("POST",{action:"leave",pid:M.pid,code:M.code}); }catch(e){} stop(); }},{label:"Stay",cls:"btn-quiet"}]);
 };
 const tvUrl=()=>`${location.origin}/party/tv.html?code=${V.room.code}`;
 $("lTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on a TV, laptop or tablet. It follows the party from game to game and doesn't count as a player.",[
@@ -375,6 +377,7 @@ function apply(j){
   if(!host){ $("wTitle").textContent="You're in!"; $("wText").textContent=`Waiting for ${hostName} to pick a game`; }
 }
 
+if(new URLSearchParams(location.search).get("ended")){ history.replaceState(null,"","/party/"); dialog("That game night has ended","The host closed the party. Host a new one or join with a new code.",[{label:"OK"}]); }
 if(M.code&&(!qc||qc===M.code)){ show("vStart"); call("GET").then(j=>{ if(j.players.some(p=>p.id===M.pid)) goOnline(j); else { M.code=""; save(); } }).catch(()=>{ M.code=""; save(); }); }
 else show("vStart");
 }
