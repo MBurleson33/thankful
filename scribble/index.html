@@ -314,6 +314,10 @@ body.ctlOn .rulesFab{display:none}
       <div class="chipsel" id="timerSel"><button type="button" data-t="60">60 sec</button><button type="button" data-t="90" class="sel">90 sec</button><button type="button" data-t="120">2 min</button><button type="button" data-t="0">No timer</button></div>
       <div class="lbl">How many rounds</div>
       <div class="chipsel" id="roundSel"><button type="button" data-r="1">1 round</button><button type="button" data-r="2" class="sel">2 rounds</button><button type="button" data-r="3">3 rounds</button></div>
+      <div id="lapBox" class="hidden">
+        <div class="lbl">How long the chains are</div>
+        <div class="chipsel" id="lapSel"><button type="button" data-l="1" class="sel">Once around</button><button type="button" data-l="2">Twice around</button></div>
+      </div>
       <div id="capBox" class="hidden">
         <div class="lbl">How far each chain goes</div>
         <div class="chipsel" id="capSel"><button type="button" data-c="0" class="sel">Everyone</button><button type="button" data-c="8">8 passes</button><button type="button" data-c="6">6 passes</button></div>
@@ -419,7 +423,7 @@ body.ctlOn .rulesFab{display:none}
 <h2>How to play Scribble Telephone</h2>
 <p>Like the old telephone game, but with drawings. The worse the drawing, the better the ending.</p>
 <h3>1. Join</h3>
-<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>The host picks how long to draw and how many rounds (1 to 3), then starts. You need at least 3 players.</li></ul>
+<ul><li>The host taps <b>Host a new game</b> and reads out the code. Everyone joins on their own phone.</li><li>The host picks how long to draw and how many rounds (1 to 3), then starts. You need at least 3 players.</li><li>Small group (6 or fewer)? Pick <b>Twice around</b> so each chain goes around the table two times. Longer chains drift further from where they started.</li></ul>
 <h3>2. Write</h3>
 <ul><li>Everyone writes a short phrase to start their own chain, like "Grandma winning at football."</li><li>Stuck? Tap <b>Give me an idea</b>.</li></ul>
 <h3>3. Draw, guess, repeat</h3>
@@ -527,11 +531,12 @@ $("lTv").onclick=()=>dialog("Show it on a TV","Open this link in the browser on 
   {label:"Open TV mode on this device",cls:"btn-quiet",go:()=>{ location.href=tvUrl(); }},{label:"Cancel",cls:"btn-quiet"}]);
 
 // ---------- lobby settings
-let timer=90, cap=0, totalRounds=2;
+let timer=90, cap=0, totalRounds=2, laps=1;
+$("lapSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ laps=+b.dataset.l; $("lapSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"settings",laps}); });
 $("roundSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ totalRounds=+b.dataset.r; $("roundSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"settings",totalRounds}); });
 $("timerSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ timer=+b.dataset.t; $("timerSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); api({action:"settings",timer}); });
 $("capSel").querySelectorAll("button").forEach(b=>b.onclick=()=>{ cap=+b.dataset.c; $("capSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b)); });
-$("lStart").onclick=()=>api({action:"start",timer,cap,totalRounds});
+$("lStart").onclick=()=>api({action:"start",timer,cap,totalRounds,laps});
 $("pSkip").onclick=()=>dialog("Move on now?","Anyone still working gets skipped this round. Their step will show as \"ran out of time.\"",[{label:"Move on",cls:"btn-hot",go:()=>api({action:"skip"})},{label:"Wait a bit",cls:"btn-quiet"}]);
 const at=()=>V.room.revealBook*100+V.room.revealStep;
 $("rNext").onclick=()=>api({action:"next",at:at()});
@@ -603,9 +608,11 @@ function paintLobby(){
   if(isHost()){
     timer=V.room.timer; $("timerSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",+x.dataset.t===timer));
     $("capBox").classList.toggle("hidden",n<=6);
+    laps=V.room.laps||1; $("lapSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",+x.dataset.l===laps));
+    $("lapBox").classList.toggle("hidden",n>6);
     totalRounds=V.room.totalRounds||2; $("roundSel").querySelectorAll("button").forEach(x=>x.classList.toggle("sel",+x.dataset.r===totalRounds));
     $("lStart").disabled=n<3;
-    $("lHint").textContent=n<3?`Need at least 3 players (${3-n} more).`:`${totalRounds} round${totalRounds===1?"":"s"}. Each chain gets ${Math.max(3,Math.min(n,cap||n))} steps.`;
+    $("lHint").textContent=n<3?`Need at least 3 players (${3-n} more).`:`${totalRounds} round${totalRounds===1?"":"s"}. Each chain gets ${laps===2&&n<=6?n*2:Math.max(3,Math.min(n,cap||n))} steps${laps===2&&n<=6?", and you'll see your own chain once along the way":""}.`;
   }
 }
 function paintPlay(){

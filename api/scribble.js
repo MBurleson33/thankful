@@ -29,7 +29,9 @@ const parse = v => { try { return v ? JSON.parse(v) : null; } catch (e) { return
 function startRound(room, players) {
   room.order = players.map(p => p.id);
   const n = room.order.length;
-  room.rounds = Math.max(3, Math.min(n, [4, 6, 8].includes(room.cap) ? room.cap : n));
+  // small groups can send each chain around the table twice for longer, wilder chains
+  const lap = room.laps === 2 && n <= 6 ? 2 : 1;
+  room.rounds = lap === 2 ? n * 2 : Math.max(3, Math.min(n, [4, 6, 8].includes(room.cap) ? room.cap : n));
   room.round = 0; room.roundStart = Date.now(); room.phase = "play"; room.game = (room.game || 0) + 1;
   room.revealBook = 0; room.revealStep = 0; room.gain = {};
   room.scores = room.scores || {};
@@ -108,7 +110,7 @@ async function view(raw, me, q) {
   const out = {
     room: { code: room.code, hostId: room.hostId, phase: room.phase, round: room.round, rounds: room.rounds, roundStart: room.roundStart || 0,
             timer: room.timer, order: room.order, revealBook: room.revealBook, revealStep: room.revealStep, game: room.game || 1,
-            roundNo: room.roundNo || 1, totalRounds: room.totalRounds || 1, scores: room.scores || {}, gain: room.gain || {}, cap: room.cap || 0 },
+            roundNo: room.roundNo || 1, totalRounds: room.totalRounds || 1, laps: room.laps || 1, scores: room.scores || {}, gain: room.gain || {}, cap: room.cap || 0 },
     players: players.map(p => ({ id: p.id, name: p.name })),
   };
   if (room.phase === "play") {
@@ -298,12 +300,14 @@ module.exports = async (req, res) => {
       } else if (action === "settings") {
         const t = +body.timer; if ([0, 60, 90, 120].includes(t)) room.timer = t;
         if ([1, 2, 3].includes(+body.totalRounds)) room.totalRounds = +body.totalRounds;
+        if ([1, 2].includes(+body.laps)) room.laps = +body.laps;
         await saveRoom();
       } else if (action === "start") {
         if (raw.players.length < 3) return send(400, { error: "You need at least 3 players." });
         const t = +body.timer; if ([0, 60, 90, 120].includes(t)) room.timer = t;
         room.cap = [4, 6, 8].includes(+body.cap) ? +body.cap : 0;
         room.totalRounds = [1, 2, 3].includes(+body.totalRounds) ? +body.totalRounds : 2;
+        room.laps = +body.laps === 2 ? 2 : 1;
         room.roundNo = 1; room.scores = {};
         startRound(room, raw.players);
         await redis([["DEL", k.entries, k.votes, k.winners]]);
