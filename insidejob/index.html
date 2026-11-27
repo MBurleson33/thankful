@@ -404,7 +404,7 @@ const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 // location art lives in /insidejob/img/<slug>.webp; locations without a picture yet just show their name
-const ART = new Set(["thanksgiving-dinner","church-potluck","bowling-alley","fire-station","farmers-market","haunted-house","car-wash","dentists-office","pumpkin-patch","ski-lodge","water-park","campground","mall-at-christmas","bakery","laundromat","pet-store","rodeo","state-fair","football-tailgate","recording-studio","escape-room","ice-cream-truck","kids-birthday-party","garage-sale","lighthouse","car-dealership","mini-golf","trampoline-park"]);
+const ART = new Set(["thanksgiving-dinner","church-potluck","bowling-alley","fire-station","farmers-market","haunted-house","car-wash","dentists-office","pumpkin-patch","ski-lodge","water-park","campground","mall-at-christmas","bakery","laundromat","pet-store","rodeo","state-fair","football-tailgate","recording-studio","escape-room","ice-cream-truck","kids-birthday-party","garage-sale","lighthouse","car-dealership","mini-golf","trampoline-park","drive-in-movie","barbershop"]);
 const slug = n => String(n).toLowerCase().replace(/&/g,"and").replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const pic = (n,cls="pic") => ART.has(slug(n)) ? `<div class="${cls}"><img src="img/${slug(n)}.webp" alt="" draggable="false"></div>` : "";
 const SECTIONS = ["setup","lobby","game","vote","result"];
