@@ -233,6 +233,9 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
 .board .pts{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--forest);font-variant-numeric:tabular-nums}
 .board .plus{color:var(--gold);font-weight:600;font-size:14px;margin-left:6px}
 .board .tag{color:var(--cran);font-size:12px;font-weight:600;border:1px solid var(--cran-soft);border-radius:999px;padding:1px 8px}
+.face .pic{margin:-6px -4px 14px;border-radius:10px;overflow:hidden;aspect-ratio:16/10;background:var(--gold-pale);box-shadow:0 1px 2px rgba(60,40,20,.15)}
+.face .pic img,.verdict .pic img{display:block;width:100%;height:100%;object-fit:cover}
+.verdict .pic{position:relative;z-index:1;margin:-10px -6px 16px;border-radius:12px;overflow:hidden;aspect-ratio:16/10;border:1px solid rgba(251,246,236,.35)}
 .pickGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:52vh;overflow-y:auto;margin:0 0 14px;-webkit-overflow-scrolling:touch}
 .pickGrid button{border:1px solid var(--line);background:var(--gold-pale);border-radius:9px;padding:9px 8px;font-size:14px;font-weight:500;text-align:left;min-height:44px;cursor:pointer;color:var(--ink)}
 .pickGrid button.x{opacity:.5;text-decoration:line-through}
@@ -400,6 +403,10 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
 const $ = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+// location art lives in /insidejob/img/<slug>.webp; locations without a picture yet just show their name
+const ART = new Set(["thanksgiving-dinner","church-potluck","bowling-alley","fire-station","farmers-market","haunted-house"]);
+const slug = n => String(n).toLowerCase().replace(/&/g,"and").replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const pic = (n,cls="pic") => ART.has(slug(n)) ? `<div class="${cls}"><img src="img/${slug(n)}.webp" alt="" draggable="false"></div>` : "";
 const SECTIONS = ["setup","lobby","game","vote","result"];
 function showSec(id){ SECTIONS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
 
@@ -530,7 +537,7 @@ function enterRound(j){
   role.classList.toggle("mole",!!me.mole);
   $("face").innerHTML = me.mole
     ? `<div class="cat">Your secret</div><div class="loc">You're the Mole</div><p class="tipline">You don't know the location. Listen closely, answer vaguely, and blend in.<br><br>Figured it out? Tap the Mole button below and guess.</p>`
-    : `<div class="cat">The location</div><div class="loc">${esc(me.location)}</div><div class="roleTag"><span>Your role</span><b>${esc(me.role)}</b></div><p class="tipline">Prove you know the place without giving it away to the Mole.</p>`;
+    : `${pic(me.location)}<div class="cat">The location</div><div class="loc">${esc(me.location)}</div><div class="roleTag"><span>Your role</span><b>${esc(me.role)}</b></div><p class="tipline">Prove you know the place without giving it away to the Mole.</p>`;
   const first=room.players.find(p=>p.id===room.firstId);
   $("firstName").textContent = first ? (first.id===O.pid ? "You ask the first question" : `${first.name} asks the first question`) : "Anyone can ask first";
   $("timerBtn").classList.toggle("hidden",!isHost); $("voteBtn").classList.toggle("hidden",!isHost);
@@ -612,7 +619,7 @@ function paintResult(j, fresh){
   let extra="";
   if(r.outcome==="caught"||r.outcome==="framed") extra=`<p class="k" style="margin:14px 0 0">The table accused ${esc(nameOf(r.accusedId))}.</p>`;
   if(r.outcome==="guessed"||r.outcome==="wrongguess") extra=`<p class="k" style="margin:14px 0 0">The Mole guessed ${esc(r.guess||"")}.</p>`;
-  v.innerHTML = `<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameOf(r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div>${extra}<p class="why">${WHY[r.outcome]||""}</p>`;
+  v.innerHTML = `${pic(r.location)}<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameOf(r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div>${extra}<p class="why">${WHY[r.outcome]||""}</p>`;
   const sc=room.scores||{};
   const rows=room.players.map(p=>({p,pts:sc[p.id]||0,plus:r.moleWins?(p.id===r.moleId?2:0):(p.id===r.moleId?0:1)})).sort((a,b)=>b.pts-a.pts);
   $("board").innerHTML = rows.map(x=>`<li><span class="nm">${esc(x.p.name)}${x.p.id===O.pid?' <span class="me" style="color:var(--muted);font-weight:500">You</span>':""}</span>${x.p.id===r.moleId?'<span class="tag">Mole</span>':""}<span class="pts">${x.pts}</span><span class="plus">${x.plus?"+"+x.plus:""}</span></li>`).join("");
