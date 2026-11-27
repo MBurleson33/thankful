@@ -210,7 +210,14 @@ textarea{font-family:var(--serif);font-style:italic;font-size:22px;line-height:1
 .phrase{font-family:var(--serif);font-weight:500;font-size:clamp(24px,7vw,30px);line-height:1.15;margin:2px 0 4px;text-wrap:balance;overflow-wrap:anywhere}
 .pad{position:relative;width:100%;aspect-ratio:1/1;border-radius:12px;border:1px solid rgba(43,36,32,.22);background:#fffcf7;overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 6px #fffcf7,inset 0 0 0 7px var(--gold-soft)}
 .pad canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tools{margin:12px 0}
+.pal{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:10px}
+.pal .sw{width:100%;height:auto;aspect-ratio:1/1;max-width:40px;justify-self:center}
+.trow{display:flex;align-items:center;gap:8px}
+#tDraw,#tDraw *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#tDraw button{touch-action:manipulation}
+body.drawing{-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+body:has(#tDraw:not(.hidden)) .rulesFab{display:none}
 .sw{width:36px;height:36px;border-radius:50%;border:2px solid #fffcf7;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
 .sw.sel{box-shadow:0 0 0 2px var(--ink)}
 .sw.eraser{background:#fffcf7 !important;display:grid;place-items:center}
@@ -554,15 +561,21 @@ $("dAgain").onclick=()=>api({action:"lobby"});
 // ---------- drawing pad
 const pad=$("padCanvas"); let strokes=[], cur=null, color=0, size=14;
 const SIZES=[6,14,30];
-$("tools").innerHTML=SC_COLORS.map((c,i)=>i===7?`<button class="sw eraser" type="button" data-c="7" aria-label="Eraser"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a6b5d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4l4 4-10 10H6l-2-2z"/><path d="M13 7l4 4"/><path d="M4 20h16"/></svg></button>`:`<button class="sw ${i===0?"sel":""}" type="button" data-c="${i}" style="background:${c}" aria-label="Color ${i+1}"></button>`).join("")
-  +`<div class="sizes">${SIZES.map((s,i)=>`<button class="sz ${s===size?"sel":""}" type="button" data-s="${s}" aria-label="${["Thin","Medium","Thick"][i]} brush"><i style="width:${[6,10,16][i]}px;height:${[6,10,16][i]}px"></i></button>`).join("")}</div>`;
+const ERASER='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a6b5d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4l4 4-10 10H6l-2-2z"/><path d="M13 7l4 4"/><path d="M4 20h16"/></svg>';
+$("tools").innerHTML=`<div class="pal">${SC_ORDER.map(i=>`<button class="sw ${i===0?"sel":""}" type="button" data-c="${i}" style="background:${SC_COLORS[i]}" aria-label="Color ${i+1}"></button>`).join("")}</div>`
+  +`<div class="trow"><button class="sw eraser" type="button" data-c="7" aria-label="Eraser">${ERASER}</button><span class="hint" style="margin:0">Eraser</span>`
+  +`<div class="sizes">${SIZES.map((s,i)=>`<button class="sz ${s===size?"sel":""}" type="button" data-s="${s}" aria-label="${["Thin","Medium","Thick"][i]} brush"><i style="width:${[6,10,16][i]}px;height:${[6,10,16][i]}px"></i></button>`).join("")}</div></div>`;
 $("tools").querySelectorAll(".sw").forEach(b=>b.onclick=()=>{ color=+b.dataset.c; $("tools").querySelectorAll(".sw").forEach(x=>x.classList.toggle("sel",x===b)); });
 $("tools").querySelectorAll(".sz").forEach(b=>b.onclick=()=>{ size=+b.dataset.s; $("tools").querySelectorAll(".sz").forEach(x=>x.classList.toggle("sel",x===b)); });
 function padPoint(e){ const r=pad.getBoundingClientRect(); return [Math.round((e.clientX-r.left)/r.width*1000), Math.round((e.clientY-r.top)/r.height*1000)]; }
 function redraw(){ scDraw(pad, cur?strokes.concat([cur]):strokes); }
-pad.addEventListener("pointerdown",e=>{ e.preventDefault(); pad.setPointerCapture(e.pointerId); const [x,y]=padPoint(e); cur={c:color,w:color===7?Math.max(size,30):size,p:[x,y]}; redraw(); });
+// keep phones from selecting text, showing the magnifier or scrolling while someone draws
+["touchstart","touchmove","mousedown"].forEach(t=>pad.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+pad.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("selectstart",e=>{ if(cur||!$("tDraw").classList.contains("hidden")&&e.target&&e.target.closest&&e.target.closest("#tDraw")) e.preventDefault(); });
+pad.addEventListener("pointerdown",e=>{ e.preventDefault(); try{ window.getSelection().removeAllRanges(); }catch(x){} document.body.classList.add("drawing"); pad.setPointerCapture(e.pointerId); const [x,y]=padPoint(e); cur={c:color,w:color===7?Math.max(size,30):size,p:[x,y]}; redraw(); });
 pad.addEventListener("pointermove",e=>{ if(!cur) return; const [x,y]=padPoint(e); const n=cur.p.length; const dx=x-cur.p[n-2], dy=y-cur.p[n-1]; if(dx*dx+dy*dy<16) return; cur.p.push(x,y); redraw(); });
-const endStroke=()=>{ if(cur){ strokes.push(cur); cur=null; redraw(); } };
+const endStroke=()=>{ document.body.classList.remove("drawing"); if(cur){ strokes.push(cur); cur=null; redraw(); } };
 pad.addEventListener("pointerup",endStroke); pad.addEventListener("pointercancel",endStroke);
 $("dUndo").onclick=()=>{ strokes.pop(); redraw(); };
 $("dClear").onclick=()=>{ if(!strokes.length) return; dialog("Clear your drawing?","This erases everything on the pad.",[{label:"Clear it",cls:"btn-hot",go:()=>{ strokes=[]; redraw(); }},{label:"Keep drawing",cls:"btn-quiet"}]); };

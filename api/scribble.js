@@ -73,7 +73,7 @@ function cleanStrokes(s) {
   const out = []; let pts = 0;
   for (const st of s.slice(0, MAX_STROKES)) {
     if (!st || !Array.isArray(st.p)) continue;
-    const c = Math.max(0, Math.min(7, st.c | 0)), w = Math.max(1, Math.min(60, st.w | 0));
+    const c = Math.max(0, Math.min(16, st.c | 0)), w = Math.max(1, Math.min(60, st.w | 0));
     const p = [];
     for (let i = 0; i + 1 < st.p.length && pts < MAX_POINTS; i += 2, pts++) {
       p.push(Math.max(0, Math.min(1000, Math.round(+st.p[i] || 0))), Math.max(0, Math.min(1000, Math.round(+st.p[i + 1] || 0))));
