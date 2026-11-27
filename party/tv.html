@@ -186,7 +186,8 @@ body{color:var(--ink);font-family:var(--sans);overflow:hidden;background-color:v
 {
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const NAMES={chameleon:"Chameleon",thankful:"Who's Thankful For That?",gobble:"Gobble Minds",scribble:"Scribble Telephone",trivia:"Fast Finger Trivia"};
+const NAMES={chameleon:"Chameleon",thankful:"Who's Thankful For That?",gobble:"Gobble Minds",scribble:"Scribble Telephone",trivia:"Fast Finger Trivia",insidejob:"Inside Job"};
+const NO_TV=["chameleon","insidejob"];
 const TVP=g=>g==="thankful"?"/tv.html":`/${g}/tv.html`;
 const VIEWS=["vEntry","vLobby","vPlaying"];
 const show=id=>VIEWS.forEach(v=>$(v).classList.toggle("hidden",v!==id));
@@ -216,9 +217,9 @@ async function tick(){
 function qr(){ try{ const q=qrcode(0,"M"); q.addData(`${location.origin}/party/?code=${code}`); q.make(); $("qr").innerHTML=q.createSvgTag({cellSize:6,margin:0,scalable:true}); }catch(e){ $("qr").classList.add("hidden"); } }
 function render(j){
   const r=j.room, g=r.game||"";
-  if(g&&g!=="chameleon"){ location.href=`${TVP(g)}?code=${r.code}&party=${r.code}`; return; }
+  if(g&&!NO_TV.includes(g)){ location.href=`${TVP(g)}?code=${r.code}&party=${r.code}`; return; }
   $("pillCode").textContent=r.code;
-  if(g==="chameleon"){ if(shown!=="chameleon"){ show("vPlaying"); $("pill").classList.remove("hidden"); } $("playQ").textContent=NAMES.chameleon; shown="chameleon"; return; }
+  if(NO_TV.includes(g)){ if(shown!==g){ show("vPlaying"); $("pill").classList.remove("hidden"); } $("playQ").textContent=NAMES[g]; shown=g; return; }
   if(shown!=="lobby"){ show("vLobby"); $("pill").classList.add("hidden"); $("bigCode").textContent=r.code; qr(); }
   shown="lobby";
   const host=(j.players.find(p=>p.id===r.hostId)||{name:"The host"}).name;
