@@ -3,19 +3,21 @@
 // shows a slim party bar (host gets "Switch game"), and follows the host to whatever game is picked.
 (function () {
   const KEY = "party-v1";
-  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1", trivia: "trivia-online-v1" };
-  const NAMES = { chameleon: "Chameleon", thankful: "Who's Thankful For That?", gobble: "Gobble Minds", scribble: "Scribble Telephone", trivia: "Fast Finger Trivia" };
+  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1", trivia: "trivia-online-v1", insidejob: "insidejob-online-v1" };
+  const NAMES = { chameleon: "Chameleon", thankful: "Who's Thankful For That?", gobble: "Gobble Minds", scribble: "Scribble Telephone", trivia: "Fast Finger Trivia", insidejob: "Inside Job" };
   const qs = new URLSearchParams(location.search);
   const code = String(qs.get("party") || "").toUpperCase();
   const isTV = document.body.classList.contains("tv");
   const seg = (location.pathname.split("/").filter(Boolean)[0] || "").toLowerCase();
   const game = (!seg || seg === "index.html" || seg === "tv.html") ? "thankful" : seg;
   // where each game's phone page and TV page live (Thankful sits at the site root)
-  const API = { thankful: "/api/room", gobble: "/api/gobble", scribble: "/api/scribble", chameleon: "/api/chameleon", trivia: "/api/trivia" };
+  const API = { thankful: "/api/room", gobble: "/api/gobble", scribble: "/api/scribble", chameleon: "/api/chameleon", trivia: "/api/trivia", insidejob: "/api/insidejob" };
   // each game's own Leave buttons; in party mode they leave the whole party instead
-  const LEAVE_IDS = ["lLeave", "dLeave", "rLeave", "aLeave", "fLeave", "lbLeave", "leave"];
+  const LEAVE_IDS = ["lLeave", "dLeave", "rLeave", "aLeave", "fLeave", "lbLeave", "leave", "vLeave"];
   const PHONE = g => g === "thankful" ? "/" : `/${g}/`;
   const TVP = g => g === "thankful" ? "/tv.html" : `/${g}/tv.html`;
+  // games with no TV page of their own: the party TV screen shows "Now playing" instead
+  const NO_TV = ["chameleon", "insidejob"];
   window.PARTY = null;
   if (!/^[A-Z]{4}$/.test(code) || !OKEYS[game]) return;
 
@@ -113,7 +115,7 @@
       const g = j.room.game || "";
       if (g === game) return;
       if (!g) location.href = isTV ? `/party/tv.html?code=${code}` : `/party/?code=${code}`;
-      else if (isTV) location.href = g === "chameleon" ? `/party/tv.html?code=${code}` : `${TVP(g)}?code=${code}&party=${code}`;
+      else if (isTV) location.href = NO_TV.includes(g) ? `/party/tv.html?code=${code}` : `${TVP(g)}?code=${code}&party=${code}`;
       else location.href = `${PHONE(g)}?party=${code}`;
     } catch (e) {}
   }

@@ -2,7 +2,7 @@
 // appears at the top of the screen on every step of the game. Tapping it shows a big QR code, the code
 // and the link, so latecomers can join without the host going back to the lobby.
 (function () {
-  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1", trivia: "trivia-online-v1" };
+  const OKEYS = { chameleon: "chameleon-online-v1", thankful: "thankful-online-v1", gobble: "gobble-online-v1", scribble: "scribble-online-v1", trivia: "trivia-online-v1", insidejob: "insidejob-online-v1" };
   const seg = (location.pathname.split("/").filter(Boolean)[0] || "").toLowerCase();
   const game = (!seg || seg === "index.html") ? "thankful" : seg;
   if (!OKEYS[game] || document.body.classList.contains("tv")) return;

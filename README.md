@@ -25,3 +25,7 @@ At `/scribble/` (TV mode at `/scribble/tv.html`), using `api/scribble.js`. Write
 ## Fast Finger Trivia
 
 At `/trivia/` (TV mode at `/trivia/tv.html`), using `api/trivia.js`. Everyone answers the same multiple-choice question on their own phone; right answers score 500-1,000 points by speed, plus a streak bonus. The host picks categories (Bible, holidays, food, geography, science, history, sports, movies & games), 10/15/20 questions and 10-30 seconds per question. Questions live server-side in `api/_trivia-bank.js` so answers never reach phones early; a room won't repeat questions across games. Works with party mode.
+
+## Inside Job
+
+At `/insidejob/`, using `api/insidejob.js`. Everyone gets the same secret location and a role, except the Mole, who doesn't know where you are. Players take turns asking each other questions; the host calls a vote (one re-vote between tied players), or the Mole guesses the location from the list. The server keeps the location and the Mole's identity, so each phone only receives its own card until the round ends. 30 original locations with 7 roles each live in the API file. 3-12 players, works with party mode (the party TV shows "Now playing").
