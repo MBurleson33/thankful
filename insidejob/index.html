@@ -236,9 +236,21 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
 .face .pic{margin:-6px -4px 14px;border-radius:10px;overflow:hidden;aspect-ratio:16/10;background:var(--gold-pale);box-shadow:0 1px 2px rgba(60,40,20,.15)}
 .face .pic img,.verdict .pic img{display:block;width:100%;height:100%;object-fit:cover}
 .verdict .pic{position:relative;z-index:1;margin:-10px -6px 16px;border-radius:12px;overflow:hidden;aspect-ratio:16/10;border:1px solid rgba(251,246,236,.35)}
-.pickGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:52vh;overflow-y:auto;margin:0 0 14px;-webkit-overflow-scrolling:touch}
-.pickGrid button{border:1px solid var(--line);background:var(--gold-pale);border-radius:9px;padding:9px 8px;font-size:14px;font-weight:500;text-align:left;min-height:44px;cursor:pointer;color:var(--ink)}
-.pickGrid button.x{opacity:.5;text-decoration:line-through}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.gallery figure,.pickGrid button{margin:0;border-radius:10px;overflow:hidden;background:var(--gold-pale);border:1px solid var(--line);text-align:left}
+.gallery img,.pickGrid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gold-soft)}
+.gallery figcaption,.pickGrid span{display:block;padding:6px 8px 7px;font-size:13.5px;font-weight:600;line-height:1.2}
+details.locs2 summary{cursor:pointer;font-family:var(--serif);font-weight:600;font-size:19px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.locs2 summary::-webkit-details-marker{display:none}
+details.locs2 summary::after{content:"Show";font:600 14px var(--sans);color:var(--forest);text-decoration:underline}
+details.locs2[open] summary::after{content:"Hide"}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.yn .btn.sel{outline:3px solid var(--gold);outline-offset:2px}
+.accusedBig{font-family:var(--serif);font-size:38px;font-weight:600;line-height:1.05;color:var(--cran);margin:6px 0 4px;overflow-wrap:anywhere}
+.need{font-size:15px;color:var(--muted);margin:6px 0 0}
+.pickGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:56vh;overflow-y:auto;margin:0 0 14px;-webkit-overflow-scrolling:touch}
+.pickGrid button{padding:0;cursor:pointer;color:var(--ink);font:inherit}
+.pickGrid.inline{max-height:none;overflow:visible;margin-top:12px}
 </style>
 </head>
 <body>
@@ -277,9 +289,10 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
       <h2>How to play</h2>
       <ol>
         <li>One person taps Host and reads out the code. Everyone else joins with it. You need 3 to 12 players.</li>
+        <li>Study the 30 locations in the lobby. Once the round starts, the list is hidden.</li>
         <li>Hold your card. Everyone sees the same secret location and their own role, except the Mole, who doesn't know where you are.</li>
-        <li>Take turns asking each other questions about the location. Whoever answers asks the next question.</li>
-        <li>Think you know the Mole? The host calls a vote. Mole, figured out the location? Tap the Mole button and guess.</li>
+        <li>The player shown asks anyone a question. Whoever answers asks the next one, but not back to the person who just asked them.</li>
+        <li>Anyone can stop the round and accuse someone. The Mole can stop it and guess the location. If time runs out first, the Mole wins.</li>
       </ol>
     </div>
   </section>
@@ -305,6 +318,11 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
       <p class="hint" id="lbHint">Wait until everyone's on the list.</p>
     </div>
     <p class="wait hidden" id="lbWait"><span class="dotty">Waiting for the host to start</span></p>
+    <div class="sheet" style="margin-top:16px">
+      <h2 style="font-size:21px">The 30 locations</h2>
+      <p class="sub">Study them now. Once the round starts, nobody can see this list. The Mole only gets to look again when guessing.</p>
+      <div class="gallery" id="lbGallery"></div>
+    </div>
   </section>
 
   <!-- ROUND -->
@@ -341,15 +359,10 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
     </div>
 
     <div class="endBtns gap">
-      <button class="btn btn-hot" id="voteBtn" type="button">Time to vote</button>
+      <button class="btn btn-hot" id="accuseBtn" type="button">Stop the round and accuse someone</button>
       <button class="btn btn-quiet" id="moleBtn" type="button">I'm the Mole. I know where we are!</button>
     </div>
-
-    <div class="sheet">
-      <div class="secHead"><h2>Possible locations</h2><button type="button" id="clearX">Clear</button></div>
-      <p class="sub">Tap to cross one out. Only you see this.</p>
-      <div class="locs" id="locs"></div>
-    </div>
+    <p class="hint" style="text-align:center">The location list stays hidden until the round ends.</p>
   </section>
 
   <!-- VOTE -->
@@ -359,16 +372,34 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
       <button class="btn btn-chip" id="vLeave" type="button">Leave</button>
     </div>
     <div class="sheet gap">
-      <h2 id="vTitle" style="font-size:26px">Who's the Mole?</h2>
-      <p class="sub" id="vSub">Vote on your own phone. Most votes gets accused.</p>
-      <ul class="ballot" id="ballot"></ul>
+      <p class="sub" id="vBy" style="margin:0">Someone stopped the round</p>
+      <div class="accusedBig" id="vTarget">Name</div>
+      <h2 id="vTitle" style="font-size:22px">Is this the Mole?</h2>
+      <p class="need" id="vNeed"></p>
+      <div class="yn" id="vYN"><button class="btn btn-hot" type="button" data-yn="yes">Yes</button><button class="btn btn-quiet" type="button" data-yn="no">No</button></div>
+      <p class="wait hidden" id="vMine" style="margin:14px 0 0"></p>
       <p class="err" id="vErr"></p>
     </div>
     <div class="sheet gap">
       <p style="margin:0;font-family:var(--serif);font-weight:600;font-size:19px" id="vCount">Votes are in</p>
       <div class="chips" id="vChips"></div>
+      <p class="sub" style="margin-top:10px">The timer is paused. If the vote fails, the round picks back up.</p>
     </div>
     <button class="btn btn-quiet hidden" id="closeVote" type="button">Close the vote now</button>
+  </section>
+
+  <!-- LAST GUESS -->
+  <section id="last" class="hidden">
+    <div class="bar">
+      <div><div class="code" id="lgCode">ABCD</div><div class="meta" id="lgMeta">Last chance</div></div>
+      <button class="btn btn-chip" id="lgLeave" type="button">Leave</button>
+    </div>
+    <div class="verdict molewin gap" id="lgBox"></div>
+    <div class="sheet hidden" id="lgPick">
+      <h2 style="font-size:22px">Where are you?</h2>
+      <p class="sub">One guess. Right, and you still win. Wrong, and the crew wins.</p>
+      <div class="pickGrid inline" id="lgGrid"></div>
+    </div>
   </section>
 
   <!-- RESULT -->
@@ -383,6 +414,7 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
       <p class="sub">The Mole gets 2 points for a win. When the crew wins, everyone else gets 1.</p>
       <ul class="board" id="board"></ul>
     </div>
+    <details class="sheet gap locs2"><summary>All 30 locations</summary><div class="gallery" id="rGallery"></div></details>
     <div class="endBtns" id="rHost">
       <button class="btn btn-go" id="nextBtn" type="button">Next round</button>
       <button class="btn btn-quiet" id="toLobbyBtn" type="button">Change players or timer</button>
@@ -407,7 +439,7 @@ const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 const ART = new Set(["thanksgiving-dinner","church-potluck","bowling-alley","fire-station","farmers-market","haunted-house","car-wash","dentists-office","pumpkin-patch","ski-lodge","water-park","campground","mall-at-christmas","bakery","laundromat","pet-store","rodeo","state-fair","football-tailgate","recording-studio","escape-room","ice-cream-truck","kids-birthday-party","garage-sale","lighthouse","car-dealership","mini-golf","trampoline-park","drive-in-movie","barbershop"]);
 const slug = n => String(n).toLowerCase().replace(/&/g,"and").replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const pic = (n,cls="pic") => ART.has(slug(n)) ? `<div class="${cls}"><img src="img/${slug(n)}.webp" alt="" draggable="false"></div>` : "";
-const SECTIONS = ["setup","lobby","game","vote","result"];
+const SECTIONS = ["setup","lobby","game","vote","last","result"];
 function showSec(id){ SECTIONS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
 
 // ---------- custom dialogs
@@ -485,12 +517,13 @@ function leaveOnline(){
   dialog({title:"Leave this game?",text:V&&V.room.hostId===O.pid?"You're the host. If you leave, nobody can start new rounds.":"You can rejoin with the same code.",buttons:[
     {label:"Leave game",cls:"btn-hot",onClick:async()=>{ try{ await call("POST",{action:"leave",pid:O.pid,code:O.code}); }catch(e){} stopOnline(); }},{label:"Stay"}]});
 }
-["lbLeave","leave","vLeave","rLeave"].forEach(id=>$(id).onclick=leaveOnline);
+["lbLeave","leave","vLeave","lgLeave","rLeave"].forEach(id=>$(id).onclick=leaveOnline);
 
 // ---------- lobby
 $("lbTimer").onchange=()=>api({action:"settings",timer:+$("lbTimer").value});
 $("lbStart").onclick=()=>api({action:"start"});
 function paintLobby(j, waiting){
+  gallery($("lbGallery"));
   const room=j.room, lobby=j.lobby, isHost=room.hostId===O.pid, n=lobby.length;
   $("lbCode").textContent=room.code;
   $("lbCount").textContent = n===1 ? "1 player so far" : `${n} players so far`;
@@ -520,17 +553,17 @@ role.addEventListener("keyup",hide);
 role.tabIndex=0;
 document.addEventListener("visibilitychange",hide);
 
-// crossed-out locations, per round, on this phone only
-let crossed=new Set();
-function paintLocs(){
-  $("locs").innerHTML = LOCS.map((n,i)=>`<button type="button" data-i="${i}" class="${crossed.has(i)?"x":""}" aria-pressed="${crossed.has(i)}">${esc(n)}</button>`).join("");
-  $("locs").querySelectorAll("button").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; crossed.has(i)?crossed.delete(i):crossed.add(i); b.classList.toggle("x"); b.setAttribute("aria-pressed",String(crossed.has(i))); });
+// location pictures (falls back to a plain tile if a picture is missing)
+const thumb = n => ART.has(slug(n)) ? `<img src="img/${slug(n)}.webp" alt="" loading="lazy" draggable="false">` : `<img alt="">`;
+function gallery(el){ if(el.dataset.done) return; el.innerHTML = LOCS.map(n=>`<figure>${thumb(n)}<figcaption>${esc(n)}</figcaption></figure>`).join(""); el.dataset.done="1"; }
+const pickHtml = () => LOCS.map((n,i)=>`<button type="button" data-g="${i}">${thumb(n)}<span>${esc(n)}</span></button>`).join("");
+function confirmGuess(g, last){
+  dialog({title:`Guess ${esc(LOCS[g])}?`,text: last ? "This is your one guess. There's no take-back." : "You're revealing that you're the Mole. Right, and you win. Wrong, and the crew wins.",
+    buttons:[{label:`Lock in ${LOCS[g]}`,cls:"btn-hot",onClick:()=>api({action:"guess",loc:g})},{label:"Pick again",onClick:()=>{ if(!last) $("moleBtn").click(); }}]});
 }
-$("clearX").onclick=()=>{ crossed=new Set(); paintLocs(); };
 
 function enterRound(j){
   const room=j.room, me=j.me, isHost=room.hostId===O.pid;
-  crossed=new Set(); paintLocs();
   $("roomCode").textContent=room.code;
   $("roomMeta").textContent=`Round ${room.round}, ${room.players.length} players`;
   $("youAre").textContent = isHost ? `${O.name} (host)` : O.name;
@@ -540,8 +573,8 @@ function enterRound(j){
     : `${pic(me.location)}<div class="cat">The location</div><div class="loc">${esc(me.location)}</div><div class="roleTag"><span>Your role</span><b>${esc(me.role)}</b></div><p class="tipline">Prove you know the place without giving it away to the Mole.</p>`;
   const first=room.players.find(p=>p.id===room.firstId);
   $("firstName").textContent = first ? (first.id===O.pid ? "You ask the first question" : `${first.name} asks the first question`) : "Anyone can ask first";
-  $("timerBtn").classList.toggle("hidden",!isHost); $("voteBtn").classList.toggle("hidden",!isHost);
-  $("timerHint").textContent = isHost ? "Starts on every phone at once. When time's up, call the vote." : "The host starts the timer for everyone.";
+  $("timerBtn").classList.toggle("hidden",!isHost);
+  $("timerHint").textContent = isHost ? "Starts on every phone at once. If time runs out before the Mole is caught, the Mole wins." : "The host starts the timer. If it runs out before the Mole is caught, the Mole wins.";
   window.scrollTo(0,0); lastShown = room.tStart ? "" : "idle";
 }
 
@@ -557,15 +590,17 @@ function tick(){
   if(!V||V.room.phase!=="round") return;
   const r=V.room, now=Date.now(), tS=r.tStart?r.tStart-offset:0, tE=r.tEnd?r.tEnd-offset:0;
   let txt, sub, frac, state;
-  if(!tS){ txt=fmt(r.timer); sub="Ready"; frac=1; state="idle"; }
+  if(!tS && r.tLeft){ const left=Math.ceil(r.tLeft/1000); txt=fmt(Math.min(left,r.timer)); sub="Paused"; frac=Math.min(1,r.tLeft/(r.timer*1000)); state="paused"; }
+  else if(!tS){ txt=fmt(r.timer); sub="Ready"; frac=1; state="idle"; }
   else if(now<tS){ txt=String(Math.ceil((tS-now)/1000)); sub="Get ready"; frac=1; state="wait"; }
   else if(now<tE){ const left=Math.ceil((tE-now)/1000); txt=fmt(left); sub="Ask away"; frac=(tE-now)/(tE-tS); state=left<=20?"warn":"run"; }
-  else { txt="0:00"; sub="Time to vote"; frac=0; state="done"; }
+  else { txt="0:00"; sub="Time's up"; frac=0; state="done"; }
   $("timeTxt").textContent=txt; $("timeSub").textContent=sub;
   $("ring").style.strokeDashoffset = CIRC*(1-frac);
   $("ring").style.stroke = state==="warn"||state==="done" ? "#e7a1ab" : "#e6d6b0";
   $("timerBox").classList.toggle("done",state==="done");
-  $("timerBtn").textContent = state==="idle" ? "Start timer" : state==="done" ? "Restart timer" : "Stop timer";
+  $("timerBtn").textContent = state==="idle" ? "Start timer" : state==="paused" ? "Resume timer" : "Pause timer";
+  $("timerBtn").disabled = state==="done";
   if(state!==lastShown){
     if(state==="done" && lastShown && lastShown!=="idle"){ beep(3); try{navigator.vibrate&&navigator.vibrate([300,150,300,150,500]);}catch(e){} }
     if(state==="run" && lastShown==="wait") beep(1);
@@ -574,56 +609,77 @@ function tick(){
 }
 setInterval(tick,200);
 $("timerBtn").onclick=()=>{ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); audio.resume&&audio.resume(); }catch(e){} api({action:"timer"}); };
-$("voteBtn").onclick=()=>dialog({title:"Time to vote?",text:"Everyone's phone switches to the ballot. The Mole can't guess the location after this.",buttons:[{label:"Start the vote",cls:"btn-hot",onClick:()=>api({action:"callvote"})},{label:"Keep asking"}]});
+$("accuseBtn").onclick=()=>{
+  if(!V||!V.me) return;
+  const others=V.room.players.filter(p=>p.id!==O.pid);
+  dialog({title:"Who's the Mole?",html:`<p>This stops the round and everyone else votes yes or no. Your vote counts as yes.</p><ul class="ballot">${others.map(p=>`<li><button type="button" data-a="${p.id}"><span class="ck"></span>${esc(p.name)}</button></li>`).join("")}</ul><div style="height:12px"></div>`,buttons:[{label:"Never mind"}]});
+  dlg.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const p=others.find(x=>x.id===b.dataset.a); close();
+    dialog({title:`Accuse ${esc(p.name)}?`,text:`More than half of the other players must vote yes. If they're the Mole, they get one last guess at the location. If they're not, the Mole wins.`,buttons:[{label:`Accuse ${p.name}`,cls:"btn-hot",onClick:()=>api({action:"accuse",who:p.id})},{label:"Pick someone else",onClick:()=>$("accuseBtn").click()}]}); });
+};
 
 // the Mole button is on every phone so it isn't a giveaway
 $("moleBtn").onclick=()=>{
   if(!V||!V.me) return;
   if(!V.me.mole){ dialog({title:"You're not the Mole",text:"This button is on every phone so it doesn't give the Mole away. Close it and keep asking questions.",buttons:[{label:"Got it",cls:"btn-go"}]}); return; }
-  dialog({title:"Where are you?",html:`<p>Pick the location. Guess right and you win the round. Guess wrong and the crew wins.</p><div class="pickGrid">${LOCS.map((n,i)=>`<button type="button" data-g="${i}" class="${crossed.has(i)?"x":""}">${esc(n)}</button>`).join("")}</div>`,buttons:[{label:"Never mind"}]});
-  dlg.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ const g=+b.dataset.g; close();
-    dialog({title:`Guess ${esc(LOCS[g])}?`,text:"This ends the round for everyone. There's no take-back.",buttons:[{label:`Lock in ${LOCS[g]}`,cls:"btn-hot",onClick:()=>api({action:"guess",loc:g})},{label:"Pick again",onClick:()=>$("moleBtn").click()}]}); });
+  dialog({title:"Where are you?",html:`<p>Pick the location. Guess right and you win the round. Guess wrong and the crew wins.</p><div class="pickGrid">${pickHtml()}</div>`,buttons:[{label:"Never mind"}]});
+  dlg.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ close(); confirmGuess(+b.dataset.g,false); });
 };
 
-// ---------- vote
+// ---------- accusation vote
+const nameIn=(room,id)=>{ const p=room.players.find(x=>x.id===id); return p?p.name:"Someone"; };
 function paintVote(j){
-  const room=j.room, isHost=room.hostId===O.pid, tied=room.tied||[], seated=room.players.some(p=>p.id===O.pid);
-  $("vCode").textContent=room.code;
-  $("vMeta").textContent= tied.length ? `Round ${room.round} re-vote` : `Round ${room.round} vote`;
-  $("vTitle").textContent= tied.length ? "It's a tie. Vote again" : "Who's the Mole?";
-  $("vSub").textContent= tied.length ? "Only the tied players are on the ballot. If it ties again, the Mole escapes." : "Vote on your own phone. Most votes gets accused.";
-  const pool = room.players.filter(p=>!tied.length||tied.includes(p.id));
-  $("ballot").innerHTML = pool.map(p=>`<li><button type="button" data-v="${p.id}" class="${j.myVote===p.id?"sel":""}" ${p.id===O.pid||!seated?"disabled":""}><span class="ck"></span>${esc(p.name)}${p.id===O.pid?" (you)":""}</button></li>`).join("");
-  $("ballot").querySelectorAll("[data-v]").forEach(b=>b.onclick=async()=>{ $("vErr").textContent=""; await api({action:"vote",who:b.dataset.v}); });
-  const voted=j.voted||[], waiting=room.players.length-voted.length;
+  const room=j.room, a=room.accuse, isHost=room.hostId===O.pid;
+  const others=room.players.filter(p=>p.id!==a.target), need=Math.floor(others.length/2)+1;
+  $("vCode").textContent=room.code; $("vMeta").textContent=`Round ${room.round} accusation`;
+  $("vBy").textContent = a.by===O.pid ? "You stopped the round and accused" : `${nameIn(room,a.by)} stopped the round and accused`;
+  $("vTarget").textContent = a.target===O.pid ? "You!" : nameIn(room,a.target);
+  $("vTitle").textContent = a.target===O.pid ? "Everyone else is voting" : `Is ${nameIn(room,a.target)} the Mole?`;
+  $("vNeed").textContent = `${need} of ${others.length} yes votes needed. ${a.by===O.pid?"Yours":`${nameIn(room,a.by)}'s`} already counts as yes.`;
+  const canVote = a.target!==O.pid && a.by!==O.pid;
+  $("vYN").classList.toggle("hidden",!canVote);
+  $("vYN").querySelectorAll("[data-yn]").forEach(b=>{ b.classList.toggle("sel",j.myVote===b.dataset.yn); b.onclick=()=>{ $("vErr").textContent=""; api({action:"vote",v:b.dataset.yn}); }; });
+  $("vMine").classList.toggle("hidden",canVote);
+  $("vMine").innerHTML = a.target===O.pid ? '<span class="dotty">Hang tight while they vote</span>' : '<span class="dotty">Your vote is yes. Waiting on the others</span>';
+  const voted=j.voted||[], waiting=others.length-voted.length;
   $("vCount").textContent = waiting ? `Waiting on ${waiting} vote${waiting===1?"":"s"}` : "Everyone has voted";
-  $("vChips").innerHTML = room.players.map(p=>`<span class="${voted.includes(p.id)?"on":""}">${voted.includes(p.id)?"✓ ":""}${esc(p.name)}</span>`).join("");
+  $("vChips").innerHTML = others.map(p=>`<span class="${voted.includes(p.id)?"on":""}">${voted.includes(p.id)?"✓ ":""}${esc(p.name)}</span>`).join("");
   $("closeVote").classList.toggle("hidden",!isHost);
 }
-$("closeVote").onclick=()=>dialog({title:"Close the vote now?",text:"Use this if someone left or can't vote. Only the votes already in will count.",buttons:[{label:"Close the vote",cls:"btn-hot",onClick:()=>api({action:"closevote"})},{label:"Wait"}]});
+$("closeVote").onclick=()=>dialog({title:"Close the vote now?",text:"Use this if someone left or can't vote. Missing votes count as no.",buttons:[{label:"Close the vote",cls:"btn-hot",onClick:()=>api({action:"closevote"})},{label:"Wait"}]});
+
+// ---------- the caught Mole's last guess
+function paintLast(j, fresh){
+  const room=j.room, a=room.accuse, mole=!!(j.me&&j.me.mole);
+  $("lgCode").textContent=room.code; $("lgMeta").textContent=`Round ${room.round}, last chance`;
+  $("lgBox").innerHTML = `<div class="k">The table voted out</div><div class="big">${mole?"You!":esc(nameIn(room,a.target))}</div><p class="why" style="margin-top:4px">${mole?"You're caught! One last chance: guess the location and you still win.":`${esc(nameIn(room,a.target))} is the Mole! They get one guess at the location to steal the win.`}</p>${mole?"":'<p class="k" style="margin:14px 0 0"><span class="dotty">Waiting for their guess</span></p>'}`;
+  $("lgPick").classList.toggle("hidden",!mole);
+  if(mole && fresh){ $("lgGrid").innerHTML=pickHtml(); $("lgGrid").querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>confirmGuess(+b.dataset.g,true)); }
+}
 
 // ---------- result
-const WHY = {
-  caught: "The crew caught the Mole. Crew wins!",
-  framed: "Wrong person! The Mole slipped away. Mole wins!",
-  escaped: "The crew couldn't agree, so the Mole escaped. Mole wins!",
-  guessed: "The Mole figured out the location. Mole wins!",
-  wrongguess: "The Mole guessed wrong. Crew wins!",
-};
+function whyText(r, room){
+  const by=r.by?nameIn(room,r.by):"", acc=r.accusedId?nameIn(room,r.accusedId):"";
+  switch(r.outcome){
+    case "caught": return r.guess ? `The crew voted out the Mole, who guessed ${r.guess}. Wrong! Crew wins!` : "The crew caught the Mole. Crew wins!";
+    case "lastguess": return `The crew voted out the Mole, but they guessed ${r.guess}. Right! Mole wins!`;
+    case "framed": return `${by} accused ${acc}, and the table agreed. Wrong person! Mole wins!`;
+    case "timeup": return "Time ran out before anyone caught the Mole. Mole wins!";
+    case "guessed": return `The Mole stopped the round and guessed ${r.guess}. Right! Mole wins!`;
+    case "wrongguess": return `The Mole stopped the round and guessed ${r.guess}. Wrong! Crew wins!`;
+  }
+  return "";
+}
 function paintResult(j, fresh){
   const room=j.room, r=room.result, isHost=room.hostId===O.pid;
-  const nameOf=id=>{ const p=room.players.find(x=>x.id===id); return p?p.name:"Someone"; };
   $("rCode").textContent=room.code; $("rMeta").textContent=`Round ${room.round}`;
   const v=$("verdict");
   v.classList.toggle("molewin",!!r.moleWins);
-  let extra="";
-  if(r.outcome==="caught"||r.outcome==="framed") extra=`<p class="k" style="margin:14px 0 0">The table accused ${esc(nameOf(r.accusedId))}.</p>`;
-  if(r.outcome==="guessed"||r.outcome==="wrongguess") extra=`<p class="k" style="margin:14px 0 0">The Mole guessed ${esc(r.guess||"")}.</p>`;
-  v.innerHTML = `${pic(r.location)}<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameOf(r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div>${extra}<p class="why">${WHY[r.outcome]||""}</p>`;
+  v.innerHTML = `${pic(r.location)}<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameIn(room,r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div><p class="why">${esc(whyText(r,room))}</p>`;
   const sc=room.scores||{};
   const rows=room.players.map(p=>({p,pts:sc[p.id]||0,plus:r.moleWins?(p.id===r.moleId?2:0):(p.id===r.moleId?0:1)})).sort((a,b)=>b.pts-a.pts);
   $("board").innerHTML = rows.map(x=>`<li><span class="nm">${esc(x.p.name)}${x.p.id===O.pid?' <span class="me" style="color:var(--muted);font-weight:500">You</span>':""}</span>${x.p.id===r.moleId?'<span class="tag">Mole</span>':""}<span class="pts">${x.pts}</span><span class="plus">${x.plus?"+"+x.plus:""}</span></li>`).join("");
   $("rHost").classList.toggle("hidden",!isHost); $("rWait").classList.toggle("hidden",isHost);
+  gallery($("rGallery"));
   if(fresh && window.leafBurst) setTimeout(()=>window.leafBurst(v, 26), 150);
 }
 $("nextBtn").onclick=()=>api({action:"next"});
@@ -641,17 +697,26 @@ function apply(j){
   }
   const newRound = last.round!==room.round;
   if(room.phase==="round"){
-    if(last.phase!=="round"||newRound){ close(); enterRound(j); }
+    if(newRound || (last.phase!=="round" && last.phase!=="accuse")){ close(); enterRound(j); }
+    else if(last.phase==="accuse"){
+      close(); window.scrollTo(0,0);
+      const f=room.lastFailed;
+      if(f) dialog({title:"Not enough votes",text:`${esc(nameIn(room,f.target))} stays in. Only ${f.yes} of ${f.of} said yes, so the round picks back up.`,buttons:[{label:"Keep asking",cls:"btn-go"}]});
+    }
     showSec("game"); tick();
-  } else if(room.phase==="vote"){
-    if(last.phase!=="vote"||last.ballot!==room.ballot){ close(); window.scrollTo(0,0); }
+  } else if(room.phase==="accuse"){
+    if(last.phase!=="accuse"||last.ballot!==room.accuse.n){ close(); hide(); window.scrollTo(0,0); }
     showSec("vote"); paintVote(j);
+  } else if(room.phase==="lastguess"){
+    const fresh = last.phase!=="lastguess";
+    if(fresh){ close(); hide(); window.scrollTo(0,0); }
+    showSec("last"); paintLast(j, fresh);
   } else if(room.phase==="result"){
     const fresh = last.phase!=="result"||newRound;
     if(fresh){ close(); window.scrollTo(0,0); hide(); }
     showSec("result"); paintResult(j, fresh);
   }
-  last.phase=room.phase; last.round=room.round; last.ballot=room.ballot;
+  last.phase=room.phase; last.round=room.round; last.ballot=room.accuse?room.accuse.n:-1;
 }
 
 let lock=null;
@@ -675,18 +740,18 @@ else if(O.code){ call("GET").then(j=>{ if(j.lobby.some(p=>p.id===O.pid)||j.room.
 <button class="rulesFab" id="rulesFab" type="button" aria-haspopup="dialog">Rules</button>
 <div class="scrim" id="rulesScrim"><div class="sheet dialog rulesDlg" role="dialog" aria-modal="true" aria-label="Rules"><h2>How to play Inside Job</h2>
 <p>Everyone is at the same secret location except one person, the Mole. Catch the Mole before they figure out where you are.</p>
-<h3>1. Join</h3>
-<ul><li>The host taps <b>Host a new game</b> and reads the 4-letter code out loud. You need 3 to 12 players.</li><li>Everyone else enters their name and the code. The host picks a round timer, then starts.</li></ul>
+<h3>1. Before the round</h3>
+<ul><li>The host taps <b>Host a new game</b> and reads the 4-letter code out loud. You need 3 to 12 players.</li><li>Everyone can study the list of 30 locations in the lobby. Once the round starts, nobody can see the list.</li></ul>
 <h3>2. Check your card</h3>
-<ul><li>Press and hold your card so nobody else can see it.</li><li>The crew sees the location and a role, like <i>Bowling Alley: Shoe Rental Clerk</i>. Roles are just for fun and for answering in character.</li><li>The Mole only sees "You're the Mole."</li><li>Everyone sees the full list of possible locations. Tap to cross them out as you go.</li></ul>
+<ul><li>Press and hold your card so nobody else can see it.</li><li>The crew sees the location and a role, like <i>Bowling Alley: Shoe Rental Clerk</i>. Roles are just for fun and for answering in character.</li><li>The Mole only sees "You're the Mole."</li></ul>
 <h3>3. Ask questions</h3>
-<ul><li>The person shown on screen asks anyone a question about the location, like "How did you get here today?"</li><li>Whoever answers asks the next question, but not right back to the person who just asked them.</li><li>Too obvious, and the Mole figures out the location. Too vague, and people think you're the Mole.</li></ul>
-<h3>4. Vote</h3>
-<ul><li>When time's up, or when the table is ready, the host taps <b>Time to vote</b>.</li><li>Everyone votes on their own phone. Most votes gets accused.</li><li>Tie? One re-vote between just the tied players. Tied again, and the Mole escapes.</li></ul>
+<ul><li>A random player starts by asking anyone one question about the location, like "How did you get here today?"</li><li>Answer any way you want. Then you ask anyone a question, except the person who just asked you.</li><li>Keep going until the host's timer runs out. If time runs out and nobody has caught the Mole, the Mole wins.</li></ul>
+<h3>4. Accuse someone</h3>
+<ul><li>At any point, anyone can tap <b>Stop the round and accuse someone</b>. The timer pauses.</li><li>Everyone else votes yes or no on their phone. The accuser counts as yes, and the accused doesn't vote. More than half of the other players have to say yes.</li><li>Not enough yes votes? The round picks back up.</li><li><b>Accused the wrong person:</b> the Mole wins.</li><li><b>Caught the Mole:</b> they get one last guess, and they can look at the location list for it. Right, and the Mole still wins. Wrong, and the crew wins.</li></ul>
 <h3>5. The Mole's move</h3>
-<ul><li>Before the vote, the Mole can tap <b>I'm the Mole</b> and guess the location. Right, and the Mole wins. Wrong, and the crew wins.</li><li>The button is on every phone so it doesn't give anyone away.</li></ul>
-<h3>6. Who wins</h3>
-<ul><li><b>Mole caught:</b> the crew wins, and everyone but the Mole gets 1 point.</li><li><b>Wrong person accused, a tie that doesn't break, or a right guess:</b> the Mole wins 2 points.</li></ul>
+<ul><li>At any point, the Mole can tap <b>I'm the Mole</b>, reveal themselves, and guess the location from the list. Right, and the Mole wins. Wrong, and the crew wins.</li><li>The button is on every phone so it doesn't give anyone away.</li></ul>
+<h3>6. Points</h3>
+<ul><li>When the Mole wins, they get 2 points. When the crew wins, everyone but the Mole gets 1.</li></ul>
 <div class="tip"><b>Good questions:</b> "What are you wearing?", "Would you bring a kid here?", "What's that smell?", "How long have you been here?"</div><div class="rulesFoot"><button class="btn btn-go" id="rulesClose" type="button">Got it</button></div></div></div>
 <script>
 {const sc=document.getElementById("rulesScrim");
