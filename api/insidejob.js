@@ -1,5 +1,9 @@
 // Inside Job room sync. Everyone gets the same secret location and a role, except the Mole, who has to bluff.
 // The server keeps the secrets: each phone only ever receives its own card until the round is over.
+// Rules: anyone can stop the round and accuse one player; everyone else votes yes or no (the accuser counts as yes,
+// the accused doesn't vote) and more than half of the other players must say yes. A failed accusation resumes the round.
+// Accuse the Mole and they get one last guess at the location; accuse anyone else and the Mole wins.
+// The Mole can also stop the round and guess. If the timer runs out with nobody caught, the Mole wins.
 // Rooms live in Upstash Redis (REST API, plain fetch) and expire after a day.
 // Env: KV_REST_API_URL + KV_REST_API_TOKEN (Vercel Storage) or UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN.
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -76,11 +80,13 @@ async function loadRaw(code) {
   return { room: JSON.parse(room), lobby: pl.map(p => ({ id: p.id, name: p.name })), votes: vt };
 }
 
-// votes for the current ballot only (each re-vote gets a new ballot number)
-const ballotKey = room => `${room.round}.${room.ballot || 0}`;
-function currentVotes(raw) {
-  const out = {}, b = ballotKey(raw.room);
-  for (const [id, v] of Object.entries(raw.votes)) if (v.b === b && raw.room.players.some(p => p.id === id)) out[id] = v.who;
+// each accusation gets its own ballot
+const ballotKey = room => `${room.round}.${room.accuseN || 0}`;
+const voters = room => room.players.filter(p => p.id !== room.accuse.target);
+function tally(raw) {
+  const { room } = raw, b = ballotKey(room), out = {};
+  out[room.accuse.by] = "yes";   // the accuser counts as yes
+  for (const p of voters(room)) { const v = raw.votes[p.id]; if (p.id !== room.accuse.by && v && v.b === b) out[p.id] = v.v; }
   return out;
 }
 
@@ -89,15 +95,17 @@ function view(raw, me) {
   const out = {
     room: {
       code: room.code, hostId: room.hostId, phase: room.phase, round: room.round, timer: room.timer,
-      players: room.players, firstId: room.firstId || "", tStart: room.tStart || 0, tEnd: room.tEnd || 0,
-      ballot: room.ballot || 0, tied: room.tied || [], scores: room.scores || {}, result: null,
+      players: room.players, firstId: room.firstId || "", tStart: room.tStart || 0, tEnd: room.tEnd || 0, tLeft: room.tLeft || 0,
+      accuse: room.phase === "accuse" || room.phase === "lastguess" ? room.accuse : null,
+      lastFailed: room.phase === "round" ? room.lastFailed || null : null,
+      scores: room.scores || {}, result: null,
     },
     lobby, locations: LOC_NAMES,
   };
-  if (room.phase === "vote") {
-    const v = currentVotes(raw);
-    out.voted = Object.keys(v);
-    out.myVote = v[me] || "";
+  if (room.phase === "accuse") {
+    const t = tally(raw);
+    out.voted = Object.keys(t);
+    out.myVote = t[me] || "";
   }
   if (room.phase === "result") {
     out.room.result = Object.assign({}, room.result, { moleId: room.moleId, location: LOC_NAMES[room.loc] });
@@ -112,8 +120,9 @@ function view(raw, me) {
 }
 
 // Score the round and move to the result screen. Mole win: +2 to the Mole. Crew win: +1 to everyone else.
+const MOLE_WINS = ["framed", "timeup", "guessed", "lastguess"];
 function finish(room, result) {
-  const moleWins = ["framed", "escaped", "guessed"].includes(result.outcome);
+  const moleWins = MOLE_WINS.includes(result.outcome);
   const sc = room.scores || {};
   for (const p of room.players) {
     sc[p.id] = sc[p.id] || 0;
@@ -121,37 +130,49 @@ function finish(room, result) {
     if (!moleWins && p.id !== room.moleId) sc[p.id] += 1;
   }
   room.scores = sc; room.result = Object.assign({ moleWins }, result);
-  room.phase = "result"; room.tStart = room.tEnd = 0;
+  room.phase = "result"; room.tStart = room.tEnd = room.tLeft = 0;
 }
 
-// Close the vote once everyone has voted (or the host forces it). Returns true when the room changed.
-async function maybeCloseVote(raw, force) {
+// Only one request may end a round (two phones closing the same vote at once would score it twice).
+async function claim(room, what) {
+  const [got] = await redis([["SET", K(room.code).lock + ":" + room.round + ":" + what, "1", "NX", "EX", 120]]);
+  return got === "OK";
+}
+
+// Time's up with nobody caught: the Mole wins. Checked whenever anyone talks to the server.
+async function maybeTimeUp(raw) {
   const { room } = raw;
-  if (room.phase !== "vote") return false;
-  const v = currentVotes(raw);
-  const everyone = room.players.every(p => v[p.id]);
-  if (!everyone && !force) return false;
-  const k = K(room.code);
-  const [got] = await redis([["SET", k.lock + ":" + ballotKey(room), "1", "NX", "EX", 60]]);
-  if (got !== "OK") return false;   // someone else is already closing this ballot
-  const tally = {};
-  Object.values(v).forEach(who => { tally[who] = (tally[who] || 0) + 1; });
-  const top = Math.max(0, ...Object.values(tally));
-  const leaders = Object.keys(tally).filter(id => tally[id] === top);
-  if (!top) {
-    finish(room, { outcome: "escaped", accusedId: "", tally });
-  } else if (leaders.length > 1) {
-    if ((room.ballot || 0) === 0) {
-      // one re-vote between just the tied players
-      room.ballot = 1; room.tied = leaders; room.lastTally = tally;
-    } else {
-      finish(room, { outcome: "escaped", accusedId: "", tally });
-    }
+  if (room.phase !== "round" || !room.tEnd || Date.now() < room.tEnd) return false;
+  if (!(await claim(room, "time"))) return false;
+  finish(room, { outcome: "timeup", accusedId: "" });
+  await redis([["SET", K(room.code).room, JSON.stringify(room), "EX", TTL]]);
+  return true;
+}
+
+// Settle the accusation as soon as the outcome is certain (or when the host forces it; missing votes count as no).
+async function maybeSettle(raw, force) {
+  const { room } = raw;
+  if (room.phase !== "accuse") return false;
+  const t = tally(raw), n = voters(room).length;
+  const yes = Object.values(t).filter(v => v === "yes").length;
+  const missing = n - Object.keys(t).length;
+  const need = Math.floor(n / 2) + 1;   // more than half of the other players
+  let passed = null;
+  if (yes >= need) passed = true;
+  else if (yes + missing < need || (force && yes < need)) passed = false;
+  if (passed === null) return false;
+  if (!(await claim(room, "acc" + (room.accuseN || 0)))) return false;
+  room.accuse.yes = yes; room.accuse.of = n;
+  if (!passed) {
+    // back to the round; the clock picks up where it paused
+    room.phase = "round"; room.lastFailed = Object.assign({}, room.accuse);
+    if (room.tLeft) { room.tEnd = Date.now() + room.tLeft; room.tStart = room.tEnd - room.timer * 1000; room.tLeft = 0; }
+  } else if (room.accuse.target === room.moleId) {
+    room.phase = "lastguess";
   } else {
-    const accused = leaders[0];
-    finish(room, { outcome: accused === room.moleId ? "caught" : "framed", accusedId: accused, tally });
+    finish(room, { outcome: "framed", accusedId: room.accuse.target, by: room.accuse.by, yes, of: n });
   }
-  await redis([["SET", k.room, JSON.stringify(room), "EX", TTL]]);
+  await redis([["SET", K(room.code).room, JSON.stringify(room), "EX", TTL]]);
   return true;
 }
 
@@ -165,8 +186,9 @@ module.exports = async (req, res) => {
       const q = req.query || Object.fromEntries(new URL(req.url, "http://x").searchParams);
       const code = String(q.code || "").toUpperCase(), me = cleanId(q.pid);
       if (!CODE_RE.test(code)) return send(400, { error: "That code doesn't look right." });
-      const raw = await loadRaw(code);
+      let raw = await loadRaw(code);
       if (!raw) return send(404, { error: "No game with that code. Check it and try again." });
+      if (await maybeTimeUp(raw)) raw = await loadRaw(code);
       return send(200, view(raw, me));
     }
     if (req.method !== "POST") return send(405, { error: "Method not allowed" });
@@ -208,11 +230,13 @@ module.exports = async (req, res) => {
     if (!CODE_RE.test(code)) return send(400, { error: "That code doesn't look right." });
     let raw = await loadRaw(code);
     if (!raw) return send(404, { error: "No game with that code. Check it and try again." });
+    if (await maybeTimeUp(raw)) raw = await loadRaw(code);
     const { room } = raw, k = K(code);
     const isHost = pid === room.hostId;
     const seated = (room.players || []).some(p => p.id === pid);
     const touch = [["EXPIRE", k.players, TTL], ["EXPIRE", k.votes, TTL]];
     const saveRoom = () => redis([["SET", k.room, JSON.stringify(room), "EX", TTL], ...touch]);
+    const tooLate = () => send(400, room.phase === "result" ? { error: "Time's up! The round is over." } : { error: "That can't happen right now." });
 
     if (action === "join") {
       const name = cleanName(body.name);
@@ -225,22 +249,38 @@ module.exports = async (req, res) => {
       await redis([["HSET", k.players, pid, JSON.stringify({ name, t: existing ? t : Date.now() })], ...touch]);
     } else if (action === "leave") {
       if (!isHost) await redis([["HDEL", k.players, pid]]);
-    } else if (action === "vote") {
+    } else if (action === "accuse") {
       if (!seated) return send(403, { error: "You're not in this round." });
-      if (room.phase !== "vote") return send(400, { error: "Voting is closed." });
+      if (room.phase !== "round") return tooLate();
       const who = cleanId(body.who);
-      const pool = (room.tied || []).length ? room.tied : room.players.map(p => p.id);
-      if (!pool.includes(who)) return send(400, { error: "Pick one of the players on the list." });
-      if (who === pid) return send(400, { error: "You can't vote for yourself." });
-      await redis([["HSET", k.votes, pid, JSON.stringify({ b: ballotKey(room), who })], ...touch]);
+      if (who === pid) return send(400, { error: "You can't accuse yourself." });
+      if (!room.players.some(p => p.id === who)) return send(400, { error: "Pick one of the players." });
+      room.accuseN = (room.accuseN || 0) + 1;
+      room.accuse = { by: pid, target: who, n: room.accuseN };
+      if (room.tStart && Date.now() < room.tEnd) { room.tLeft = Math.max(1000, room.tEnd - Date.now()); room.tStart = room.tEnd = 0; }
+      room.phase = "accuse";
+      await saveRoom();
       raw = await loadRaw(code);
-      await maybeCloseVote(raw, false);
+      await maybeSettle(raw, false);   // with 3 players the accuser's yes can already decide it
+    } else if (action === "vote") {
+      if (room.phase !== "accuse") return tooLate();
+      if (!seated) return send(403, { error: "You're not in this round." });
+      if (pid === room.accuse.target) return send(400, { error: "You're the one accused, so you don't vote." });
+      if (pid === room.accuse.by) return send(400, { error: "You made the accusation, so your vote is already yes." });
+      const v = body.v === "yes" ? "yes" : body.v === "no" ? "no" : "";
+      if (!v) return send(400, { error: "Vote yes or no." });
+      await redis([["HSET", k.votes, pid, JSON.stringify({ b: ballotKey(room), v })], ...touch]);
+      raw = await loadRaw(code);
+      await maybeSettle(raw, false);
     } else if (action === "guess") {
       if (pid !== room.moleId) return send(403, { error: "Only the Mole can guess the location." });
-      if (room.phase !== "round") return send(400, { error: "It's too late to guess now." });
+      if (room.phase !== "round" && room.phase !== "lastguess") return tooLate();
       const g = +body.loc;
       if (!Number.isInteger(g) || g < 0 || g >= LOCATIONS.length) return send(400, { error: "Pick a location from the list." });
-      finish(room, { outcome: g === room.loc ? "guessed" : "wrongguess", accusedId: "", guess: LOC_NAMES[g] });
+      if (!(await claim(room, "guess"))) return send(200, view(await loadRaw(code), pid));
+      const right = g === room.loc, guess = LOC_NAMES[g];
+      if (room.phase === "lastguess") finish(room, { outcome: right ? "lastguess" : "caught", accusedId: room.moleId, by: room.accuse.by, guess, yes: room.accuse.yes, of: room.accuse.of });
+      else finish(room, { outcome: right ? "guessed" : "wrongguess", accusedId: "", guess });
       await saveRoom();
     } else {
       // Everything below is host only
@@ -262,20 +302,18 @@ module.exports = async (req, res) => {
         room.moleId = pick(players).id; room.firstId = pick(players).id;
         const order = shuffle(LOCATIONS[room.loc][1].map((_, i) => i));
         room.roles = {}; players.filter(p => p.id !== room.moleId).forEach((p, i) => { room.roles[p.id] = order[i % order.length]; });
-        room.phase = "round"; room.tStart = room.tEnd = 0; room.ballot = 0; room.tied = []; room.result = null;
+        room.phase = "round"; room.tStart = room.tEnd = room.tLeft = 0; room.accuseN = 0; room.accuse = null; room.lastFailed = null; room.result = null;
       } else if (action === "timer") {
-        if (room.phase !== "round") return send(400, { error: "The round isn't running." });
+        if (room.phase !== "round") return tooLate();
         const now = Date.now();
-        if (room.tStart && now < room.tEnd) room.tStart = room.tEnd = 0;
+        if (room.tStart && now < room.tEnd) { room.tLeft = room.tEnd - now; room.tStart = room.tEnd = 0; }   // pause
+        else if (room.tLeft) { room.tEnd = now + room.tLeft; room.tStart = room.tEnd - room.timer * 1000; room.tLeft = 0; }   // resume
         else { room.tStart = now + 3000; room.tEnd = room.tStart + room.timer * 1000; }
-      } else if (action === "callvote") {
-        if (room.phase !== "round") return send(400, { error: "The round isn't running." });
-        room.phase = "vote"; room.ballot = 0; room.tied = [];
       } else if (action === "closevote") {
-        await maybeCloseVote(raw, true);
+        await maybeSettle(raw, true);
         return send(200, view(await loadRaw(code), pid));
       } else if (action === "lobby") {
-        room.phase = "lobby"; room.tStart = room.tEnd = 0;
+        room.phase = "lobby"; room.tStart = room.tEnd = room.tLeft = 0;
       } else {
         return send(400, { error: "Unknown action." });
       }

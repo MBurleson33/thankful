@@ -13,7 +13,7 @@
   // where each game's phone page and TV page live (Thankful sits at the site root)
   const API = { thankful: "/api/room", gobble: "/api/gobble", scribble: "/api/scribble", chameleon: "/api/chameleon", trivia: "/api/trivia", insidejob: "/api/insidejob" };
   // each game's own Leave buttons; in party mode they leave the whole party instead
-  const LEAVE_IDS = ["lLeave", "dLeave", "rLeave", "aLeave", "fLeave", "lbLeave", "leave", "vLeave"];
+  const LEAVE_IDS = ["lLeave", "dLeave", "rLeave", "aLeave", "fLeave", "lbLeave", "leave", "vLeave", "lgLeave"];
   const PHONE = g => g === "thankful" ? "/" : `/${g}/`;
   const TVP = g => g === "thankful" ? "/tv.html" : `/${g}/tv.html`;
   // games with no TV page of their own: the party TV screen shows "Now playing" instead
