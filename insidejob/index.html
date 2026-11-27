@@ -184,6 +184,65 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
 .rulesDlg .tip{background:var(--gold-pale);border-radius:10px;padding:10px 12px;margin:12px 0 4px;font-size:15px}
 .rulesFoot{position:sticky;bottom:-22px;background:var(--card);padding:12px 0 20px;margin:10px 0 -22px;border-top:1px solid var(--line)}.rulesFoot .btn{margin:0}
 
+/* ---------- Inside Job: caper flair */
+@keyframes stampIn{0%{opacity:0;transform:rotate(var(--rot,-12deg)) scale(2.6)}60%{opacity:1;transform:rotate(var(--rot,-12deg)) scale(.92)}100%{opacity:1;transform:rotate(var(--rot,-12deg)) scale(1)}}
+@keyframes glance{0%,70%,100%{transform:translateX(0)}76%,88%{transform:translateX(3px)}}
+@keyframes sealPulse{50%{box-shadow:0 0 0 7px rgba(230,214,176,.12),0 6px 14px rgba(0,0,0,.35)}}
+@keyframes rise2{from{opacity:0;transform:translateY(14px)}}
+@keyframes ringPulse{50%{opacity:.55}}
+.stamp.inline{position:relative;display:inline-block;margin:0 0 12px}
+.stamp{position:absolute;z-index:4;font:700 15px var(--sans);letter-spacing:.22em;text-transform:uppercase;padding:6px 12px 5px 14px;border:3px double currentColor;border-radius:6px;transform:rotate(var(--rot,-12deg));animation:stampIn .5s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none;background:rgba(255,252,247,.08)}
+.hero svg .eye{animation:glance 5s ease-in-out infinite}
+/* the sealed case file */
+.cover{background:radial-gradient(120% 80% at 50% 0%,#40624f 0%,var(--forest) 50%,var(--forest-deep) 100%)!important}
+.cover .file{position:absolute;top:22px;left:24px;right:24px;display:flex;justify-content:space-between;font:600 11px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:rgba(230,214,176,.7)}
+.cover .seal{position:relative;width:86px;height:86px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#c4384f 0%,var(--cran) 55%,#5e1726 100%);color:#f3d9a8;--hole:#7a1f30;box-shadow:0 0 0 4px rgba(230,214,176,.08),0 6px 14px rgba(0,0,0,.35);animation:sealPulse 2.6s ease-in-out infinite}
+.cover .seal::before{content:"";position:absolute;inset:6px;border-radius:50%;border:1px dashed rgba(243,217,168,.5)}
+.cover .seal svg{width:54px}
+.cover .pill::before{display:none}
+.role,.role .face{min-height:340px}
+.cover{padding-bottom:44px!important}
+.cover .stamp{top:auto;bottom:24px;right:26px;font-size:11px;color:rgba(230,214,176,.55);--rot:-8deg;animation:none;border-width:2px}
+.role.show .face{animation:rise2 .22s ease-out}
+.face .pic{position:relative}
+.face .pic::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),inset 0 -40px 40px -30px rgba(0,0,0,.25);border-radius:10px}
+.face .pic .stamp{top:10px;right:10px;color:#fffcf7;font-size:11px;--rot:6deg;background:rgba(47,74,58,.55);border-width:2px}
+/* the Mole's card: could be anywhere */
+.collage{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin:-6px -4px 14px;border-radius:10px;overflow:hidden;aspect-ratio:16/10}
+.collage img{width:100%;height:100%;object-fit:cover;filter:blur(3px) grayscale(.6) brightness(.7);transform:scale(1.15)}
+.collage b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:600 84px/1 var(--serif);color:#fbf6ec;text-shadow:0 4px 18px rgba(0,0,0,.5)}
+.collage .stamp{top:10px;left:10px;color:#fbf6ec;font-size:11px;--rot:-7deg;border-width:2px;background:rgba(142,38,56,.6)}
+/* first asker */
+.first .n{font-size:20px}
+/* the timer */
+.timer.warn #ring{animation:ringPulse 1s ease-in-out infinite}
+/* the accusation: under the spotlight */
+.spot{position:relative;overflow:hidden;color:#fbf6ec;border-radius:18px;padding:30px 20px 22px;margin-bottom:16px;text-align:center;
+  background:radial-gradient(70% 55% at 50% 0%,rgba(255,236,200,.28) 0%,transparent 70%),radial-gradient(120% 90% at 50% 0%,#a5344b 0%,var(--cran) 45%,#4f1320 100%);box-shadow:var(--shadow)}
+.spot::after{content:"";position:absolute;inset:7px;border:1px solid rgba(251,246,236,.3);border-radius:13px;pointer-events:none}
+.spot>*{position:relative;z-index:1}
+.spot .sub{color:rgba(251,246,236,.8)}
+.spot .accusedBig{color:#fbf6ec;font-size:46px;margin:10px 0 6px;animation:rise2 .35s ease-out}
+.spot h2{color:#f3d9a8}
+.spot .need{color:rgba(251,246,236,.75)}
+.spot .stamp{position:relative;display:inline-block;margin:0 0 14px;color:#f3d9a8;font-size:13px;--rot:-4deg;z-index:2}
+.spot .yn .btn-hot{background:#fbf6ec;color:var(--cran)}
+.spot .yn .btn-quiet{border-color:rgba(251,246,236,.45);color:#fbf6ec}
+.spot .wait{color:rgba(251,246,236,.85)}
+.spot .err{color:#ffd5db}
+/* the reveal */
+.verdict{overflow:hidden}
+.verdict .pic{position:relative}
+.verdict .stamp{top:16px;right:14px;font-size:17px;--rot:-10deg;z-index:5}
+.verdict.molewin .stamp{color:#ffe1a8;background:rgba(94,23,38,.55)}
+.verdict:not(.molewin) .stamp{color:#e9f3d9;background:rgba(36,57,45,.55)}
+.verdict .stamp.inline{top:0;right:auto;margin:0 0 14px;font-size:15px}
+.verdict .big.wait2{filter:blur(10px);opacity:.6}
+.verdict .big{transition:filter .5s,opacity .5s}
+.verdict .why,.verdict .where{transition:opacity .4s}
+.verdict.hush .why,.verdict.hush .where{opacity:0}
+@media (prefers-reduced-motion:reduce){.stamp,.hero svg .eye,.cover .seal,.timer.warn #ring,.spot .accusedBig,.role.show .face{animation:none!important}}
 /* ---------- Inside Job */
 .face .loc{font-family:var(--serif);font-size:40px;font-weight:600;line-height:1.02;margin:6px 0 16px;text-align:center;color:var(--forest);overflow-wrap:anywhere}
 .face .roleTag{margin:0 auto;max-width:300px;text-align:center;border-top:1px solid var(--gold-soft);padding-top:14px}
@@ -267,7 +326,7 @@ details.locs2[open] summary::after{content:"Hide"}
           <path d="M14 36 C8 34 5 30 4 25 M106 36 C112 34 115 30 116 25" fill="none"/>
         </g>
         <ellipse cx="38" cy="38" rx="9" ry="6" fill="#fffcf7"/><ellipse cx="82" cy="38" rx="9" ry="6" fill="#fffcf7"/>
-        <circle cx="40" cy="38" r="2.6" fill="#2b2420"/><circle cx="84" cy="38" r="2.6" fill="#2b2420"/>
+        <g class="eye"><circle cx="40" cy="38" r="2.6" fill="#2b2420"/><circle cx="84" cy="38" r="2.6" fill="#2b2420"/></g>
       </svg>
     </div>
     <p class="tagline">Everyone knows where you are except the Mole. Ask sneaky questions and catch them before they figure it out.</p>
@@ -334,9 +393,12 @@ details.locs2[open] summary::after{content:"Hide"}
 
     <div class="role" id="role" role="button" aria-label="Press and hold to see your card">
       <div class="cover">
+        <div class="file"><span>Case file</span><span id="caseNo">No. 001</span></div>
+        <div class="seal"><svg viewBox="0 0 120 70" aria-hidden="true"><path d="M14 30 C22 16 44 14 60 24 C76 14 98 16 106 30 C102 48 82 56 70 46 C66 43 63 40 60 40 C57 40 54 43 50 46 C38 56 18 48 14 30Z" fill="currentColor"/><ellipse cx="38" cy="32" rx="9" ry="6" fill="var(--hole)"/><ellipse cx="82" cy="32" rx="9" ry="6" fill="var(--hole)"/></svg></div>
         <div class="pill">Press and hold</div>
         <div class="who" id="youAre">Your dossier</div>
         <div class="fine">Keep your screen hidden</div>
+        <div class="stamp">Top secret</div>
       </div>
       <div class="face" id="face"></div>
     </div>
@@ -371,7 +433,8 @@ details.locs2[open] summary::after{content:"Hide"}
       <div><div class="code" id="vCode">ABCD</div><div class="meta" id="vMeta">Round 1 vote</div></div>
       <button class="btn btn-chip" id="vLeave" type="button">Leave</button>
     </div>
-    <div class="sheet gap">
+    <div class="spot">
+      <div class="stamp">Accused</div>
       <p class="sub" id="vBy" style="margin:0">Someone stopped the round</p>
       <div class="accusedBig" id="vTarget">Name</div>
       <h2 id="vTitle" style="font-size:22px">Is this the Mole?</h2>
@@ -438,7 +501,7 @@ const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 // location art lives in /insidejob/img/<slug>.webp; locations without a picture yet just show their name
 const ART = new Set(["thanksgiving-dinner","church-potluck","bowling-alley","fire-station","farmers-market","haunted-house","car-wash","dentists-office","pumpkin-patch","ski-lodge","water-park","campground","mall-at-christmas","bakery","laundromat","pet-store","rodeo","state-fair","football-tailgate","recording-studio","escape-room","ice-cream-truck","kids-birthday-party","garage-sale","lighthouse","car-dealership","mini-golf","trampoline-park","drive-in-movie","barbershop"]);
 const slug = n => String(n).toLowerCase().replace(/&/g,"and").replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-const pic = (n,cls="pic") => ART.has(slug(n)) ? `<div class="${cls}"><img src="img/${slug(n)}.webp" alt="" draggable="false"></div>` : "";
+const pic = (n,cls="pic",stamp="") => ART.has(slug(n)) ? `<div class="${cls}"><img src="img/${slug(n)}.webp" alt="" draggable="false">${stamp}</div>` : "";
 const SECTIONS = ["setup","lobby","game","vote","last","result"];
 function showSec(id){ SECTIONS.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
 
@@ -562,15 +625,17 @@ function confirmGuess(g, last){
     buttons:[{label:`Lock in ${LOCS[g]}`,cls:"btn-hot",onClick:()=>api({action:"guess",loc:g})},{label:"Pick again",onClick:()=>{ if(!last) $("moleBtn").click(); }}]});
 }
 
+function collage(){ const pool=[...ART].sort(()=>Math.random()-.5).slice(0,6); return pool.map(sl=>`<img src="img/${sl}.webp" alt="" draggable="false">`).join(""); }
 function enterRound(j){
+  $("caseNo").textContent = "No. " + String(j.room.round).padStart(3,"0");
   const room=j.room, me=j.me, isHost=room.hostId===O.pid;
   $("roomCode").textContent=room.code;
   $("roomMeta").textContent=`Round ${room.round}, ${room.players.length} players`;
   $("youAre").textContent = isHost ? `${O.name} (host)` : O.name;
   role.classList.toggle("mole",!!me.mole);
   $("face").innerHTML = me.mole
-    ? `<div class="cat">Your secret</div><div class="loc">You're the Mole</div><p class="tipline">You don't know the location. Listen closely, answer vaguely, and blend in.<br><br>Figured it out? Tap the Mole button below and guess.</p>`
-    : `${pic(me.location)}<div class="cat">The location</div><div class="loc">${esc(me.location)}</div><div class="roleTag"><span>Your role</span><b>${esc(me.role)}</b></div><p class="tipline">Prove you know the place without giving it away to the Mole.</p>`;
+    ? `<div class="collage">${collage()}<b>?</b><div class="stamp">Unknown</div></div><div class="cat">Your secret</div><div class="loc">You're the Mole</div><p class="tipline">You don't know the location. Listen closely, answer vaguely, and blend in.<br><br>Figured it out? Tap the Mole button below and guess.</p>`
+    : `${pic(me.location,"pic",'<div class="stamp">Confirmed</div>')}<div class="cat">The location</div><div class="loc">${esc(me.location)}</div><div class="roleTag"><span>Your role</span><b>${esc(me.role)}</b></div><p class="tipline">Prove you know the place without giving it away to the Mole.</p>`;
   const first=room.players.find(p=>p.id===room.firstId);
   $("firstName").textContent = first ? (first.id===O.pid ? "You ask the first question" : `${first.name} asks the first question`) : "Anyone can ask first";
   $("timerBtn").classList.toggle("hidden",!isHost);
@@ -598,7 +663,7 @@ function tick(){
   $("timeTxt").textContent=txt; $("timeSub").textContent=sub;
   $("ring").style.strokeDashoffset = CIRC*(1-frac);
   $("ring").style.stroke = state==="warn"||state==="done" ? "#e7a1ab" : "#e6d6b0";
-  $("timerBox").classList.toggle("done",state==="done");
+  $("timerBox").classList.toggle("done",state==="done"); $("timerBox").classList.toggle("warn",state==="warn");
   $("timerBtn").textContent = state==="idle" ? "Start timer" : state==="paused" ? "Resume timer" : "Pause timer";
   $("timerBtn").disabled = state==="done";
   if(state!==lastShown){
@@ -651,7 +716,7 @@ $("closeVote").onclick=()=>dialog({title:"Close the vote now?",text:"Use this if
 function paintLast(j, fresh){
   const room=j.room, a=room.accuse, mole=!!(j.me&&j.me.mole);
   $("lgCode").textContent=room.code; $("lgMeta").textContent=`Round ${room.round}, last chance`;
-  $("lgBox").innerHTML = `<div class="k">The table voted out</div><div class="big">${mole?"You!":esc(nameIn(room,a.target))}</div><p class="why" style="margin-top:4px">${mole?"You're caught! One last chance: guess the location and you still win.":`${esc(nameIn(room,a.target))} is the Mole! They get one guess at the location to steal the win.`}</p>${mole?"":'<p class="k" style="margin:14px 0 0"><span class="dotty">Waiting for their guess</span></p>'}`;
+  $("lgBox").innerHTML = `<div class="stamp inline" style="--rot:-4deg;color:#ffe1a8">Caught</div><div class="k">The table voted out</div><div class="big">${mole?"You!":esc(nameIn(room,a.target))}</div><p class="why" style="margin-top:4px">${mole?"You're caught! One last chance: guess the location and you still win.":`${esc(nameIn(room,a.target))} is the Mole! They get one guess at the location to steal the win.`}</p>${mole?"":'<p class="k" style="margin:14px 0 0"><span class="dotty">Waiting for their guess</span></p>'}`;
   $("lgPick").classList.toggle("hidden",!mole);
   if(mole && fresh){ $("lgGrid").innerHTML=pickHtml(); $("lgGrid").querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>confirmGuess(+b.dataset.g,true)); }
 }
@@ -674,13 +739,19 @@ function paintResult(j, fresh){
   $("rCode").textContent=room.code; $("rMeta").textContent=`Round ${room.round}`;
   const v=$("verdict");
   v.classList.toggle("molewin",!!r.moleWins);
-  v.innerHTML = `${pic(r.location)}<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameIn(room,r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div><p class="why">${esc(whyText(r,room))}</p>`;
+  const STAMP={caught:"Caught",wrongguess:"Busted",lastguess:"Escaped",framed:"Escaped",timeup:"Escaped",guessed:"Escaped"};
+  const key=room.round+"|"+r.outcome, build=v.dataset.k!==key;
+  if(build){ v.dataset.k=key; v.innerHTML = `${pic(r.location)}<div class="k">The Mole was</div><div class="big">${r.moleId===O.pid?"You!":esc(nameIn(room,r.moleId))}</div><div class="where">The location was<strong>${esc(r.location)}</strong></div><p class="why">${esc(whyText(r,room))}</p>`; }
   const sc=room.scores||{};
   const rows=room.players.map(p=>({p,pts:sc[p.id]||0,plus:r.moleWins?(p.id===r.moleId?2:0):(p.id===r.moleId?0:1)})).sort((a,b)=>b.pts-a.pts);
   $("board").innerHTML = rows.map(x=>`<li><span class="nm">${esc(x.p.name)}${x.p.id===O.pid?' <span class="me" style="color:var(--muted);font-weight:500">You</span>':""}</span>${x.p.id===r.moleId?'<span class="tag">Mole</span>':""}<span class="pts">${x.pts}</span><span class="plus">${x.plus?"+"+x.plus:""}</span></li>`).join("");
   $("rHost").classList.toggle("hidden",!isHost); $("rWait").classList.toggle("hidden",isHost);
   gallery($("rGallery"));
-  if(fresh && window.leafBurst) setTimeout(()=>window.leafBurst(v, 26), 150);
+  const finale=()=>{ v.classList.remove("hush"); v.querySelector(".big").classList.remove("wait2"); if(!v.querySelector(".stamp")) v.insertAdjacentHTML("beforeend",`<div class="stamp">${STAMP[r.outcome]||""}</div>`); if(window.leafBurst) setTimeout(()=>window.leafBurst(v, 26), 250); };
+  if(build){
+    if(!matchMedia("(prefers-reduced-motion: reduce)").matches){ v.classList.add("hush"); v.querySelector(".big").classList.add("wait2"); setTimeout(finale,1300); }
+    else finale();
+  }
 }
 $("nextBtn").onclick=()=>api({action:"next"});
 $("toLobbyBtn").onclick=()=>dialog({title:"Back to the lobby?",text:"Everyone goes back to the player list. New people can join, and you can change the timer. Scores reset when you start again.",buttons:[{label:"Go to lobby",cls:"btn-go",onClick:()=>api({action:"lobby"})},{label:"Cancel"}]});
