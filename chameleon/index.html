@@ -366,6 +366,7 @@ select{width:100%;appearance:none;background:#fff;border:1px solid rgba(43,36,32
 <div class="scrim" id="scrim"><div class="sheet dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
 
 <script src="/party-link.js"></script>
+<script src="/invite.js"></script>
 <script>
 (() => {
 "use strict";
@@ -561,6 +562,7 @@ const oSave=()=>{ try{ localStorage.setItem(OKEY,JSON.stringify({pid:O.pid,name:
 oSave();
 let offset=0, poller=null, last={phase:"",round:-1,revealed:false,pkey:""}, busy=false, fails=0;
 $("oName").value=O.name||"";
+try{ const qc=new URLSearchParams(location.search).get("code"); if(qc&&/^[A-Za-z]{4}$/.test(qc)) $("oCode").value=qc.toUpperCase(); }catch(e){}
 $("lbCat").innerHTML=catSel.innerHTML;
 
 async function call(method, body){

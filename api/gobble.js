@@ -22,6 +22,17 @@ const PROMPTS = [
   "The worst chore after a big dinner", "A Bible story every kid knows", "Something you'd bring to a potluck",
   "A hymn or worship song everyone knows", "Something you'd find in Grandma's house", "A famous Pilgrim, Native American or explorer",
   "Name a nut", "A reason to give thanks today", "Something that gets passed around the table",
+  "Name a fruit", "A pizza topping", "Something you do on a snow day", "A famous cartoon mouse", "A color of a Christmas light",
+  "Something you need for a picnic", "A breakfast cereal", "An ice cream flavor", "A sound a farm animal makes",
+  "Something you'd see at a parade", "A Christmas song", "Something in a stocking", "A reason to be late",
+  "A dog breed", "The best candy bar", "Something you put on a hot dog", "A popular baby name", "A bird you see in winter",
+  "A famous Bible hero", "Something you take to the beach", "A vegetable kids hate", "Something you do on Sunday afternoon",
+  "A word you'd use to describe Grandma's cooking", "Something that's always cold", "A place to go on a first date",
+  "Something you lose all the time", "A board game", "A drink at a coffee shop", "Something you'd find in a garage",
+  "A movie everyone has seen", "A famous landmark", "Something you'd yell at a football game", "A planet",
+  "Something with a lot of buttons", "A reason to call your mom", "A food at a county fair", "A shape of pasta",
+  "A smell that means home", "Something you shouldn't say at dinner", "A sandwich", "Something you buy at a gas station",
+  "A famous Oklahoma thing", "A soup for a cold day", "A Christmas cookie", "Something people collect", "An animal at the zoo",
 ];
 
 // Odd Bird mode: narrow categories, so a truly unique answer takes some thought
@@ -33,6 +44,24 @@ const ODD_PROMPTS = [
   "A fruit", "A candy bar", "A Thanksgiving dessert", "A Christmas tradition", "A hero from the Bible",
   "A holiday", "A country in Europe", "A flavor of ice cream", "A sport", "A city in Oklahoma",
   "A flavor of pie filling", "A hymn", "A Christmas movie", "A cheese", "A type of soup", "A topping for mashed potatoes",
+  "A kind of bird", "A vegetable", "A Disney movie", "A type of tree", "An ocean animal", "A musical instrument",
+  "A U.S. state capital", "A card game", "A type of pasta", "A kind of cookie", "A breakfast food", "A sandwich",
+  "A Thanksgiving leftover", "A cartoon character", "A superhero", "A potato chip flavor", "A type of shoe",
+  "Something in a toolbox", "A woman in the Bible", "A prophet in the Bible", "A parable Jesus told", "A miracle of Jesus",
+  "A city in the Bible", "An animal mentioned in the Bible", "A book of the New Testament", "A book of the Old Testament",
+  "A country in Africa", "A country in Asia", "A country in South America", "A car brand", "A soda", "A restaurant chain",
+  "A grocery store", "Something you'd find at the beach", "Something you'd take camping", "Something you wear in winter",
+  "A good name for a dog", "A bug or insect", "A zoo animal", "A dinosaur", "A berry", "A salad topping", "A condiment",
+  "A kind of cake", "A donut flavor", "A Christmas decoration", "One of Santa's reindeer", "A Christmas cookie",
+  "A winter sport", "An Olympic sport", "A college football team", "An NBA team", "A baseball team", "A famous athlete",
+  "A video game", "A TV game show", "A kids' TV show", "A Pixar movie", "A famous painter", "A U.S. landmark",
+  "A national park", "A job", "Something in a classroom", "A school subject", "A piece of furniture",
+  "Something in a bathroom", "Something you plug in", "Something with wheels", "A shape", "A body part",
+  "Something round", "Something sticky", "Something in a purse", "Something in a first aid kit", "A gemstone",
+  "A flower", "An herb", "A casserole", "A Mexican food", "An Italian food", "A Chinese takeout dish", "A cereal mascot",
+  "A backyard game", "Something on a playground", "A boy's name that starts with J", "A girl's name that starts with M",
+  "A word that rhymes with cake", "Something red", "Something green", "A hobby", "A craft supply", "A famous inventor",
+  "A church potluck dish", "A Sunday school song", "A thing you'd find in a barn", "A smell you love", "A pie topping",
 ];
 const promptList = mode => mode === "odd" ? ODD_PROMPTS : PROMPTS;
 
@@ -75,9 +104,10 @@ function pickPrompt(room) {
   const list = promptList(room.mode);
   const used = new Set((room.used || []).map(String));
   let pool = list.filter(t => !used.has(t));
-  if (!pool.length) { room.used = []; pool = list.slice(); }
+  // every prompt has been played in this room: start over, but not with the ones from just now
+  if (!pool.length) { const recent = new Set((room.used || []).slice(-15)); room.used = (room.used || []).slice(-15); pool = list.filter(t => !recent.has(t)); }
   const t = pool[Math.floor(Math.random() * pool.length)];
-  room.used = [...(room.used || []), t];
+  room.used = [...(room.used || []), t].slice(-300);
   return t;
 }
 
@@ -189,7 +219,7 @@ module.exports = async (req, res) => {
         if (who && who !== room.hostId) await redis([["HDEL", k.players, who], ["HDEL", k.answers, who]]);
       } else if (action === "mode") {
         if (room.phase !== "lobby") return send(400, { error: "Pick the mode in the lobby." });
-        room.mode = body.mode === "odd" ? "odd" : "herd"; room.used = [];
+        room.mode = body.mode === "odd" ? "odd" : "herd";
         await saveRoom();
       } else if (action === "veto") {
         if (room.phase !== "review") return send(400, { error: "You can only strike answers before scoring." });
@@ -201,7 +231,7 @@ module.exports = async (req, res) => {
         if (raw.players.length < 3) return send(400, { error: "You need at least 3 players." });
         const t = +body.target; if ([5, 8, 10, 12].includes(t)) room.target = t;
         if (body.mode === "odd" || body.mode === "herd") room.mode = body.mode;
-        room.scores = {}; room.turkey = null; room.round = 0; room.used = [];
+        room.scores = {}; room.turkey = null; room.round = 0;
         await newRound(); await saveRoom();
       } else if (action === "swap") {
         if (room.phase !== "answer") return send(400, { error: "You can only swap the prompt while people are answering." });
